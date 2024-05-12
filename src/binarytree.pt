@@ -65,3 +65,17 @@ def test_tree_structural_neq():
     t1 = a1(); t1.right.left.left = Node('X')
     t2 = a1(); t1.right.left.right = Node('X')
     assert not t1.equals(t2)
+
+def test_tree_heights():
+    ''' Show that the "height" of a Node is based only on the number of
+        children it has, but we can determine its depth in the overall
+        tree by doing a level-order traversal. This could be used to
+        annotate nodes with their depth in the given tree.
+    '''
+    t = a1()
+    print(t)
+    print(t.levels)
+    for n in t.levelorder:
+        print(f'node={n.value} height={n.height}')
+
+    assert 1        # fail this test to see the heights
