@@ -1,0 +1,67 @@
+''' These tests just confirm (and demonstrate) certain aspects of
+    the behaviour of the `binarytree` library.
+'''
+
+from    binarytree  import Node
+
+####################################################################
+#   Node properties
+
+def test_node_eq():
+    n1 = Node('→')
+    n2 = Node('→')
+    assert n1 is not n2
+    assert n1 != n2
+    assert n1.value == n2.value
+
+####################################################################
+#   Tree properties
+
+def a1():
+    ' A common axiom 1 from propositional calculus is nice for testing. '
+    root = Node('→')
+    root.left = Node('φ')
+    root.right = rhs = Node('→')
+    rhs.left = Node('ψ')
+    rhs.right = Node('χ')
+    root.validate()
+    return root
+
+A1_DIAGRAM = '''
+  →__
+ /   \\
+φ     →
+     / \\
+    ψ   χ
+'''
+
+def test_bt():
+    root = a1()
+    print(root.properties)  # fail this test to see handy info about the tree
+
+    assert 'Node(→)'    == repr(root)
+    assert A1_DIAGRAM   == str(root)
+    assert 'φ → ψ → χ'  == ' '.join([ n.value for n in root.inorder ])
+
+def test_tree_eq():
+    t1 = a1(); t2 = a1()
+    assert t1 is not t2
+    #   This doesn't compare the tree structure and values, but checks
+    #   to see if the two Node objects are the same object (see above).
+    assert t1 != t2
+    #   This does a structure and values comparison between two separate
+    #   instances of a tree.
+    assert t1.equals(t2)
+
+def test_tree_value_neq():
+    ' Show that a different Node value in the same structure is not equal. '
+    t1 = a1(); t2 = a1()
+    assert t2.right.left.value == 'ψ'   # make sure we're changing a value
+    t1.right.left.value = 'χ'
+    assert not t1.equals(t2)
+
+def test_tree_structural_neq():
+    ' Show that a different structure with the same values is not equal. '
+    t1 = a1(); t1.right.left.left = Node('X')
+    t2 = a1(); t1.right.left.right = Node('X')
+    assert not t1.equals(t2)

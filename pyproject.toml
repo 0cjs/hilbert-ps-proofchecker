@@ -13,3 +13,15 @@
 
 [tool.pytest.ini_options]
 testpaths = ['src']
+
+#   binarytree emits a DeprecationWarning at …/binarytree/__init__.py:30
+#   saying,
+#       pkg_resources is deprecated as an API.
+#       See https://setuptools.pypa.io/en/latest/pkg_resources.html
+#   This is due to the line:
+#       from pkg_resources import get_distribution
+#   This will presumably be fixed in a future version, but for now we
+#   ignore just this specific warning when generated at that line.
+filterwarnings = [
+    'ignore:pkg_resources is deprecated as an API:DeprecationWarning:binarytree:30',
+]
