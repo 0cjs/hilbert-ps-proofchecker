@@ -1,0 +1,15 @@
+#   This project is _not_ indended ever to be made into a distribution
+#   package, so we do not have a `[project]` or `[build-system]` section
+#   here.
+#
+#   If you did want (for some unknown reason) to make a distribution
+#   package from this, all of the files under src/ need to be moved
+#   so that they're not loaded as top-level Python modules. The easiest
+#   way to go about this would be to rename the src/ directory to the
+#   name of the top-level module you want to use, and do whatever else
+#   you need to switch to a flat layout[1] project.
+#
+#   [1]: https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/
+
+[tool.pytest.ini_options]
+testpaths = ['src']
