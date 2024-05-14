@@ -1,18 +1,18 @@
-''' Formulas are expressions consisting of a _simple proposition,_
-    which is just a variable, or a _compound proposition_ of variables
-    connected by _connectives._
+''' Formulas are expressions consisting of a *simple proposition,*
+    which is just a variable, or a *compound proposition* of variables
+    connected by *connectives.*
 
     Variable names here are restricted to single characters. This
     restriction could be removed, but might introduce problems with certain
     logics where placing things adjacent to each other is an implicit
     operation, e.g., where ``pq`` is considered to mean ``p⋅q``.
 
-    Formulas may also be _schemas_ from which formulas are _instantiated,_
-    in which case the variables are _metavariables._ (Formulas never mix
+    Formulas may also be *schemas* from which formulas are *instantiated,*
+    in which case the variables are *metavariables.* (Formulas never mix
     variables and metavariables.) Instantiation is done by substituting a
     formula (which can of course be a simple variable) for each
     metavariable. This is often done by giving each variable in the schema
-    an _index._ We do not currently support any of this, beyond allowing
+    an *index.* We do not currently support any of this, beyond allowing
     the use of integer indexes as variables. (A string representing an
     integers, e.g., ``'1'`` is not allowed as a variable.)
 
@@ -204,8 +204,8 @@ class F:
         raise ValueError(f'bad value: {repr(val)}')
 
     def __eq__(self, other):
-        ''' Return `True` if two formulae are the same, _including
-            variable names._ Technically we should probably be
+        ''' Return `True` if two formulae are the same, *including
+            variable names.* Technically we should probably be
             indicating equality if the variables can be made the same
             through subsitution.
         '''
