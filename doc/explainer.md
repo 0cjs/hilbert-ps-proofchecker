@@ -90,7 +90,39 @@ This does two useful things:
 directory and below; in this case it just activates the `pytest_pt` plugin
 above.
 
-### Source Files: `binarytree` library
+### Data Structures
+
+Representing formulas is pretty simple, depending on the language; the
+obvious way to do this is via an abstract syntax tree. In Haskell,
+
+    newtype  Var = Char
+    newtype   Op = Char
+    data Formula = Var | MonadicOp Op Formula | DyadicOp Op Formula Formula
+
+Or, if you want nice accessors:
+
+    data Formula = Var
+                 | MonadicOp { op ∷ Op, right ∷ Formula }
+                 | DyadicOp  { op ∷ Op,  left ∷ Formula, right ∷ Formula }
+
+(Note that this data structure is recursive; a `Formula` that is a
+`MonadicOp` or `DyadicOp` includes `Formula` substructures.)
+
+Doing this in Python isn't quite so simple, and needs a lot more error
+checking. This could possibly be mitigated to some or even a large degree
+by using Python's new type annotations and a type checker. I've not looked
+into this in detail yet; last I checked about six years ago the stand-alone
+type checker was far too slow to use standalone, though a bit of more
+recent experience with it wasn't so bad.
+
+Tree data structures and functions to manipulate them are not hard to build
+in Python, but I usually look around first to see if there's a decent
+library available that's appropriate for the application that might save
+more work than it creates. [anytree] seems to be the most popular, but is
+not quite suitable for us because it is designed for an arbitrary numbers
+of children per node, which means it doesn't have things such as an
+in-order iterator. [binarytree] is also pretty popular and is what I chose
+to use here.
 
 [`src/binarytree.pt`] is a set of tests for the third-party `binarytree`
 library that I use for ASTs; thus it has no corresponding `.py` file. The
@@ -101,6 +133,43 @@ also serve to document some specific library behaviour used by my code in a
 fairly obvious way, rather than being buried in the (extensive) library
 documentation.
 
+[`src/formula.py`] implements my formula class in Python, with accompanying
+tests in [`src/formula.pt`]. It lets you do, e.g., this:
+
+    >>> str(F('→', F('→', NO('ψ'), NO('φ')), F('→', 'φ', 'ψ')))
+    (¬ψ → ¬φ) → (φ → ψ)
+
+(The above is directly from the docstring for class `F` and is also a test
+that's executed by pytest, using doctest.)
+
+This is actually a lot more code and documentation than I'd normally write
+for a simple request (though you did say, the request was open-ended), but
+I was really wanting to get the `str()` display working nicely (see below)
+and anyway there were a few other things in this that served as useful bits
+of research for some of my other projects.
+
+The code is extensively documented in docstrings in the source file; HTML
+documentation etc. can be produced from this using [Sphinx] or similar
+tools; this is in progress. (If you're wanting a "just the code" version
+you can look at [`src/nodocF.py`]; I was curious to see what this looked
+like myself, so I left this version of the code in the repo.)
+
+The code formatting is mostly along the lines of [PEP 8], but I do not
+hesitate to violate PEP 8 standards when I feel another formatting can
+provide better readability or more concision. (Regarding conscision, I hate
+it when people say "write code to look like English'; they should go off
+and write COBOL where they can type `ADD X TO Y GIVING Z` instead of the
+"confusing" and "mathematica' `z = x+y`.)
+
+The `F` class and the additional `NO` constructor are named with extremely
+short names because they're what I'm currently directly using those to
+construct formulae (in Polish notation); more details on this are in the
+class docstring.
+
+This does considerable syntax checking; much of this was driven by wanting
+to write a `__str__()` method that gives a nice representation of formulae
+as mathematicians like to see them, which was demonstrated above.
+
 
 
 <!-------------------------------------------------------------------->
@@ -110,7 +179,10 @@ documentation.
 [`requirements.txt`]: ../requirements.txt
 [`src/binarytree.pt`]: ../src/binarytree.pt
 [`src/conftest.py`]: ../src/conftest.py
+[`src/formula.pt`]: ../src/formula.pt
+[`src/formula.py`]: ../src/formula.py
 [`src/pytest_pt.py`]: ../src/pytest_pt.py
+[`src/nodocF.py`]: ../src/nodocF.py
 
 [pytest_pt]: https://github.com/cynic-net/pytest_pt
 [so 50169991]: https://stackoverflow.com/a/50169991/107294
@@ -120,3 +192,8 @@ documentation.
 [pactivate]: https://github.com/cynic-net/pactivate
 [pytest_pt]: https://github.com/cynic-net/pytest_pt
 [r8format]: https://github.com/mc68-net/r8format
+
+[PEP 8]: https://peps.python.org/pep-0008/
+[Sphinx]: https://www.sphinx-doc.org/
+[anytree]: https://pypi.org/project/anytree/
+[binarytree]: https://pypi.org/project/binarytree/
