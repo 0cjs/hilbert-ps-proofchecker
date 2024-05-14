@@ -7,17 +7,21 @@ This README provides a quick overview suitable for those just wanting
 general information about what's in this repo; for details of why
 everything is the way it is, see [`doc/explainer.md`].
 
-### Running the Tests
+### Building and Running the Tests
 
-The top-level test script can be run with `./Test`. You will need nothing
-more than a Python interpreter; the test script bootstraps the pip package
-manager and virtualenv package and builds, under `.build/`, a virtual
-environment into which all required packages (including pytest) are
-installed. It then runs `pytest` to execute all of the tests. Any
-command-line parameters you give to `Test` are passed on to pytest, with
-the exception of `-c` as the first parameter which will do a clean(-ish)
-build by removing any existing virtual environment and object files under
-`.build/`.
+Running `./Test` at the top level will build everything (including
+documentation) and run all tests.
+
+This needs nothing more than a Python interpreter: the test script
+bootstraps the pip package manager and virtualenv package and builds, under
+`.build/`, a virtual environment into which all required packages
+(including pytest) are installed. It then runs `pytest` to execute all of
+the tests. Any command-line parameters you give to `Test` are passed on to
+pytest, with the exception of `-c` as the first parameter which will do a
+clean(-ish) build by removing any existing virtual environment and object
+files under `.build/`.
+
+The generated HTML documentation is placed under `.build/hdoc`.
 
 (For reasons of time, this has not been tested under Windows, but in theory
 it should work the same as it does on Unix so long as you're running the

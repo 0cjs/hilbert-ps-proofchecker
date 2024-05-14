@@ -148,11 +148,12 @@ I was really wanting to get the `str()` display working nicely (see below)
 and anyway there were a few other things in this that served as useful bits
 of research for some of my other projects.
 
-The code is extensively documented in docstrings in the source file; HTML
-documentation etc. can be produced from this using [Sphinx] or similar
-tools; this is in progress. (If you're wanting a "just the code" version
-you can look at [`src/nodocF.py`]; I was curious to see what this looked
-like myself, so I left this version of the code in the repo.)
+The code is extensively documented in docstrings in the source file. HTML
+documentation etc. can be produced from this using [Sphinx] or similar;
+this project uses [pdoc] and places the generated documentation under
+`.build/hdoc/`. If you'd like to see a "just the code" version of
+`formula.py`, you can look at [`src/nodocF.py`]; I was curious to see what
+this looked like myself, so I left this version of the code in the repo.
 
 The code formatting is mostly along the lines of [PEP 8], but I do not
 hesitate to violate PEP 8 standards when I feel another formatting can
@@ -170,9 +171,38 @@ This does considerable syntax checking; much of this was driven by wanting
 to write a `__str__()` method that gives a nice representation of formulae
 as mathematicians like to see them, which was demonstrated above.
 
+### Documentation
+
+§"Data Structures" above (and this file, of course) is the best example
+here of the sort of documentation I produce. Generated documentation from
+Python docstrings is found under [`.build/hdoc/`] after running the
+top-level build/test script `Test`.
+
+I also of course always do continuous integration (CI) in its [original
+sense][fowler]. I've not set up a "CI" server for this project because it's
+quite small and the full build and test runs in a couple of seconds. I
+would normally expect that each developer would be runnning the full set of
+tests (both on `main` and on development branches) frequently; with this
+level of discipline a CI server that does this independently isn't
+necessary.
+
+That's not to say a CI server is never useful; especially in projects where
+a full build and test takes a significant amount of time, or where multiple
+platforms are supported and you don't have developers using all those
+platforms regularly, a CI server can be invaluable. But it's important to
+remember that CI is a _process,_ not a tool, and simply dropping a CI
+server (which is just a tool) into a project doesn't necessarily provide
+any improvement at all.
+
+The core thing here that gives this project CI is not a server, but that
+the top-level `Test` script does all building and testing: if that succeeds
+you know it's likely that the system (with any changes you may have made)
+is working.
+
 
 
 <!-------------------------------------------------------------------->
+[`.build/hdoc/`] ../.build/hdoc/
 [`Test`]: ../Test
 [`pactivate`]: ../pactivate
 [`pyproject.toml`]: ../pyproject.toml
@@ -181,8 +211,8 @@ as mathematicians like to see them, which was demonstrated above.
 [`src/conftest.py`]: ../src/conftest.py
 [`src/formula.pt`]: ../src/formula.pt
 [`src/formula.py`]: ../src/formula.py
-[`src/pytest_pt.py`]: ../src/pytest_pt.py
 [`src/nodocF.py`]: ../src/nodocF.py
+[`src/pytest_pt.py`]: ../src/pytest_pt.py
 
 [pytest_pt]: https://github.com/cynic-net/pytest_pt
 [so 50169991]: https://stackoverflow.com/a/50169991/107294
@@ -197,3 +227,6 @@ as mathematicians like to see them, which was demonstrated above.
 [Sphinx]: https://www.sphinx-doc.org/
 [anytree]: https://pypi.org/project/anytree/
 [binarytree]: https://pypi.org/project/binarytree/
+[pdoc]: https://pypi.org/project/pdoc/
+
+[fowler]: https://martinfowler.com/articles/continuousIntegration.html

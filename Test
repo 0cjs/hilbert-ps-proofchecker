@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+trap 'rc=$?; echo 2>&1 "ERROR"; exit $rc' ERR
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 cd "$PROJECT_DIR"
@@ -7,4 +8,14 @@ cd "$PROJECT_DIR"
 [[ ${1:-} == -c ]] && { shift; rm -rf .build/virtualenv; }
 
 . ./pactivate -q
-exec pytest "$@"
+
+pytest "$@"
+
+echo "Generating documentation..."
+#   This produces documentation as if it were under a top-level module
+#   named `src`. It doesn't seem possible to convince it that the modules in
+#   src/ are top-level modules; doing a chdir into src/ and trying `.` or
+#   `./` as an argument doesn't work. So for the moment we just live with it.
+PYTHONPATH=src/ pdoc -o .build/hdoc/ src/
+
+echo OK
