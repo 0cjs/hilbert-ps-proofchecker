@@ -32,6 +32,7 @@
     http://creativecommons.org/publicdomain/zero/1.0/legalcode
 '''
 
+from    ast  import Module          # used only by type annotation
 import  contextlib, sys
 import  importlib, importlib.machinery
 from    importlib.util  import spec_from_file_location
