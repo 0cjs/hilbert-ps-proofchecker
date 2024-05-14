@@ -13,6 +13,8 @@
 
 [tool.pytest.ini_options]
 testpaths = ['src']
+addopts   = ['--doctest-modules']
+
 
 #   binarytree emits a DeprecationWarning at …/binarytree/__init__.py:30
 #   saying,
