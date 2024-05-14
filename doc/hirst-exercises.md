@@ -21,7 +21,7 @@ next page.
 
 1. Show a → (b → a) is a tautology.
 
-       a → (b → a)       Happens to be HPS axiom 1!
+       a → (b → a)       Happens to be PS axiom 1!
        ───────────
        t T  t t t        All entries in main connective
        t T  f t t        are T, ∴ is a tautology.
@@ -30,7 +30,7 @@ next page.
 
 2. Show that (a → (b → c)) → ((a → b) → (a → c)) is a tautology
 
-       (a → (b → c)) → ((a → b) → (a → c))   Happens to be HPS axiom 2!
+       (a → (b → c)) → ((a → b) → (a → c))   Happens to be PS axiom 2!
        ───────────────────────────────────
         t T  t T t   T   t T t  T  t T t     All entries in main connective (●)
         t F  t F f   T   t T t  F  t F f     are T, ∴ is a tautology.

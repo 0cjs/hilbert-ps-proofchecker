@@ -25,7 +25,7 @@ Let's make sure that these are tautologies:
 
 Axiom 3 is different.
 - System L Axiom 3: `(¬B → ¬A) → ((¬B → A) → B)`
--      HPS Axiom 3: `(¬B → ¬A) → (A → B)`
+-       PS Axiom 3: `(¬B → ¬A) → (A → B)`
 
 They should both be tautologies:
 
@@ -57,7 +57,7 @@ Can I do a "reverse deduction theorem" and prove that? ¬B → ¬A ⊢ A → B
     4. ...
     x. (A → B)
 
-#### HPS: (¬B → ¬A) → ((¬B → A) → B)
+#### PS: (¬B → ¬A) → ((¬B → A) → B)
 
     1. ...
     x. (¬B → ¬A) → ((¬B → A) → B)
