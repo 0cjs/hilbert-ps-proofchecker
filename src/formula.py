@@ -72,10 +72,10 @@ class F:
     '''
 
     #   We use an Enum here mainly because it gives nice repr in error output.
-    nodetype = Enum('NodeType', ['VAR', 'MONADIC', 'DYADIC', ])
-    VAR = nodetype.VAR              # XXX also includes metavariables
-    MONADIC = nodetype.MONADIC
-    DYADIC = nodetype.DYADIC
+    _nt = Enum('NodeType', ['VAR', 'MONADIC', 'DYADIC', ])
+    VAR     = _nt.VAR       ;'Node type is a variable or metavariable.'
+    MONADIC = _nt.MONADIC   ;'Node type is a monadic conective. (¬)'
+    DYADIC  = _nt.DYADIC    ;'Node type is a dyadic connective. (→, ↔, etc.)'
 
     class InternalError(RuntimeError): pass
 
@@ -158,7 +158,7 @@ class F:
 
     @staticmethod
     def nodetype(obj):
-        ''' Determine whether a note is a `VAR`, `MONADIC` or `DYADIC`,
+        ''' Determine whether a node is a `VAR`, `MONADIC` or `DYADIC`,
             raising `ValueError` if it's none of the above.
 
             The argument may be:
