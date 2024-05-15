@@ -77,7 +77,7 @@ class F:
     MONADIC = _nt.MONADIC   ;'Node type is a monadic conective. (¬)'
     DYADIC  = _nt.DYADIC    ;'Node type is a dyadic connective. (→, ↔, etc.)'
 
-    class InternalError(RuntimeError): pass
+    class InternalError(RuntimeError): '@private'
 
     def __init__(self, vc, left=None, right=None):
         ''' Propositional formula constructor. This takes a propositional
