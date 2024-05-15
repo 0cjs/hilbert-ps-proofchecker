@@ -155,12 +155,7 @@ this project uses [pdoc] and places the generated documentation under
 `formula.py`, you can look at [`src/nodocF.py`]; I was curious to see what
 this looked like myself, so I left this version of the code in the repo.
 
-The code formatting is mostly along the lines of [PEP 8], but I do not
-hesitate to violate PEP 8 standards when I feel another formatting can
-provide better readability or more concision. (Regarding conscision, I hate
-it when people say "write code to look like English'; they should go off
-and write COBOL where they can type `ADD X TO Y GIVING Z` instead of the
-"confusing" and "mathematica' `z = x+y`.)
+For notes on code style and formatting, see § [Coding Style].
 
 The `F` class and the additional `NO` constructor are named with extremely
 short names because they're what I'm currently directly using those to
@@ -198,6 +193,45 @@ The core thing here that gives this project CI is not a server, but that
 the top-level `Test` script does all building and testing: if that succeeds
 you know it's likely that the system (with any changes you may have made)
 is working.
+
+### Architecture
+
+For what I've got so far on this relatively simple project, I don't feel
+the need for any diagrams in the documentation, but I personally find it
+easy to visualise graphs, ASTs, architectures and the like in my head. I'm
+open to suggestions here.
+
+There has been some use during testing of rendered binary trees from the
+`binarytree` library; if you have a look at `test_NO()` in
+[`src/formula.pt`] you'll see that there's a `print(t)` there that shows
+the tree if the test fails. Try adding an `assert 0` to the end of the test
+to see the diagram that it prints when the test fails.
+
+### Coding Style
+
+The code formatting is mostly along the lines of [PEP 8], but I do not
+hesitate to violate PEP 8 standards when I feel another formatting can
+provide better readability or more concision.
+
+(I hate it when people say "write code to look like English'; they should
+go off and write COBOL where they can type `ADD X TO Y GIVING Z` instead of
+the "confusing" and "mathematical" `z = x+y`.)
+
+The first thing code needs to be readable is to be written as much as
+possible in the "language" of the application domain. This makes every
+large program essentially its own language of sorts embedded in the general
+programming lanugage in which it's written; you can think of all projects
+as having their own embedded [DSL] to at least some degree.
+
+I tend towards as concise as possible a code style since generally more
+time is spent reading than writing code. How concise I can be depends
+greatly on who's reading the code and the assumptions you and the reader
+share; a style suitable to be read by someone with little familiarity with
+the domain or the programming language will include a lot of information
+that's simply noise that interferes with reading for someone deeply
+familiar with both. In other words, there is no one style that will suit
+everone: code style needs to be adapted to the team. (It seems to me that
+math is very much like this, too.)
 
 ### UX/DX (User Experience/Developer Experience)
 
@@ -258,7 +292,9 @@ caught _before_ a CI server would ever see them.)
 
 
 <!-------------------------------------------------------------------->
+
 <!-- References in this repo's documentation -->
+[Coding Style]: #coding-style
 [Top-level Files]: #top-level-files
 
 <!-- References to files in this repo -->
@@ -292,4 +328,6 @@ caught _before_ a CI server would ever see them.)
 [binarytree]: https://pypi.org/project/binarytree/
 [pdoc]: https://pypi.org/project/pdoc/
 
+<!-- Other References -->
 [fowler]: https://martinfowler.com/articles/continuousIntegration.html
+[DSL]: https://en.wikipedia.org/wiki/Domain-specific_language
