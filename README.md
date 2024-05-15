@@ -33,6 +33,7 @@ For more on this, see [`doc/explainer.md`].
 
 - `doc/`: Documentation not specific to the code itself, especially
   mathematical background information and cjs's notes.
+  - `doc/TODO.md`: A to-do list for the project.
   - `doc/hirst.pdf`: Hirst and Hirst, [_A Primer for Logic and Proof_][hirst].
     The first chapter of this appears to cover, at an introductory level,
     the basic domain for the proof checking problem.

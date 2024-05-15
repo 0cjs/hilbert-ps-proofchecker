@@ -199,11 +199,72 @@ the top-level `Test` script does all building and testing: if that succeeds
 you know it's likely that the system (with any changes you may have made)
 is working.
 
+### UX/DX (User Experience/Developer Experience)
+
+There's obviously an easy-to-use CLI to build and test the project:
+`./Test`. There's further discussion of this at the start of this file in
+the [Top-level Files] section.
+
+#### Testing
+
+Currently the only additional testing beyond the pytest tests (in the `.pt`
+files) is testing of any `>>>` notations in the docstrings.
+
+An obvious additional testing system would be `mypy`; I am currently
+looking into this. (When I last used it, about six years ago, it was
+incredibly slow, possibly because it didn't do any caching. I see now from
+the `.mypy_cache/` that appeared that it does now cache, so the cost of
+using it may now be low enough to justify its benefits. However it
+currently has a number of complaints about third-party support code that
+need to be dealt with (see the [`doc/TODO.md`] for more details on this.)
+
+I'm familiar with other tools for checking test code coverage and the like,
+but I don't feel any of them are worth the time to install in this project,
+at least at the moment.
+
+#### CI and Automatic Builds
+
+In addition to the discussion in §[Top-level Files] above, I think it's
+worth mentioning that _the_ most important thing to achieve continuous
+integration is to ensure that developer have quick and easy access on their
+development machine to all tests, to the greatest degree possible, anyway.
+Developers should _not_ have to dig through YAML files in a
+`.github/workflows/` directory or similar to figure out how to test things.
+And, of course, once you have a test system that's easily run interactively
+by developers, that's also easily run by a CI server if you want one.
+
+The other important part of a test framework, if the whole thing doesn't
+run in a couple of seconds or less, is to give developers the ability to
+easily focus in and run just a small portion of the tests. The point of
+this is to close to as small a time period as possible the feedback loop of
+developer makes change → developer tests change → developer sees results →
+repeat. Making it easy for developers to run just the tests that are
+related (or so they believe) to the change they're making makes the loop
+quicker and thus directly increases productivity. It's normal for me to be
+running my currently selected set of tests several times per minute or more;
+I have a system that automatically runs them every time I save a file.
+
+A CI server is almost the antithesis of this: it requires you to create a
+commit, push it, wait for the system to set up and run the tests on the
+server (where, note, you can't select a subset of tests to run) and then
+have you look at a web page or whatever to see what went wrong. At that
+point, you have an error that you need to replicate on your development
+machine anyway, and by this time at least several minutes have elapsed.
+Better to find these problems while you're coding, before you commit, than
+have to wait for all of this. (That's not to say that CI servers aren't
+useful; just that one should focus on getting as many problems as possible
+caught _before_ a CI server would ever see them.)
+
 
 
 <!-------------------------------------------------------------------->
+<!-- References in this repo's documentation -->
+[Top-level Files]: #top-level-files
+
+<!-- References to files in this repo -->
 [`.build/hdoc/`] ../.build/hdoc/
 [`Test`]: ../Test
+[`doc/TODO.md`]: ../doc/TODO.md
 [`pactivate`]: ../pactivate
 [`pyproject.toml`]: ../pyproject.toml
 [`requirements.txt`]: ../requirements.txt
@@ -217,12 +278,14 @@ is working.
 [pytest_pt]: https://github.com/cynic-net/pytest_pt
 [so 50169991]: https://stackoverflow.com/a/50169991/107294
 
+<!-- cjs's projects -->
 [dent]: https://github.com/cynic-net/dent
 [dot-home]: https://github.com/dot-home/dot-home
 [pactivate]: https://github.com/cynic-net/pactivate
 [pytest_pt]: https://github.com/cynic-net/pytest_pt
 [r8format]: https://github.com/mc68-net/r8format
 
+<!-- Third-party Python packages and docs -->
 [PEP 8]: https://peps.python.org/pep-0008/
 [Sphinx]: https://www.sphinx-doc.org/
 [anytree]: https://pypi.org/project/anytree/
