@@ -1,4 +1,5 @@
 from    binarytree  import Node
+from    binarytree  import Node
 from    enum  import Enum
 from    functools  import lru_cache
 
@@ -6,16 +7,16 @@ def NO(obj):
     return F('¬', None, obj)
 
 class F:
-    nodetype = Enum('NodeType', ['VAR', 'MONADIC', 'DYADIC', ])
-    VAR = nodetype.VAR
-    MONADIC = nodetype.MONADIC
-    DYADIC = nodetype.DYADIC
+    _nt = Enum('NodeType', ['VAR', 'MONADIC', 'DYADIC', ])
+    VAR     = _nt.VAR       ;'Node type is a variable or metavariable.'
+    MONADIC = _nt.MONADIC   ;'Node type is a monadic conective. (¬)'
+    DYADIC  = _nt.DYADIC    ;'Node type is a dyadic connective. (→, ↔, etc.)'
 
     class InternalError(RuntimeError): pass
 
     def __init__(self, vc, left=None, right=None):
-        left  = self.nodify(left)
-        right = self.nodify(right)
+        left  = self._nodify(left)
+        right = self._nodify(right)
 
         ty = self.nodetype(vc)
         self._tree = Node(vc)
@@ -42,7 +43,7 @@ class F:
         self._tree.validate()
 
     @staticmethod
-    def nodify(x):
+    def _nodify(x):
         if x is None:               return None
         if isinstance(x, Node):     return x.clone()
         if isinstance(x, F):        return x._tree.clone()
@@ -53,10 +54,13 @@ class F:
         val = getattr(obj, 'value', obj)
 
         if isinstance(val, int):
-            if val > 0: return F.VAR
-            else:       raise ValueError(f'variable index {val} must be > 0')
+            if val > 0:
+                return F.VAR
+            else:
+                raise ValueError(f'variable index {val} must be > 0')
         if hasattr(val, 'isalpha') and hasattr(val, 'isnumeric'):
-            if len(val) != 1: raise ValueError(f'length must be 1: {repr(val)}')
+            if len(val) != 1:
+                raise ValueError(f'length must be 1: {repr(val)}')
             if val == '¬':          return F.MONADIC
             if val.isalpha():       return F.VAR
             if not val.isnumeric(): return F.DYADIC
@@ -68,6 +72,7 @@ class F:
         return self._receq(self._tree, other._tree)
 
     def _receq(self, x, y):
+        ' Recursive `binarytree.Node` value comparison for `__eq__()`. '
         if x is None and y is None: return True
         if x is None  or y is None: return False
         if x.value != y.value:      return False
@@ -80,7 +85,7 @@ class F:
     def _recrep(self, node):
         s = 'F(' + repr(node.value)
         if not node.left and not node.right:
-            return s + ')'          # no optional args
+            return s + ')'
         if node.left:
             s += ', ' + self._recrep(node.left)
         if node.right:
@@ -93,18 +98,12 @@ class F:
         tree = self._tree
         s = self._strF(tree)
         if self.nodetype(tree) == self.DYADIC:
-            return s[1:-1]      # strip off outer parens
+            return s[1:-1]
         else:
             return s
 
     @staticmethod
     def _strF(n, depth=0):
-        ''' This takes a `binarytree.Node` `n` and returns the string
-            representation of the formula expression.
-
-            This assumes that the tree structure is correct for
-            the `nodetype()`s of each node.
-        '''
         s   = F._strF
         typ = F.nodetype(n)
         if typ == F.VAR:        return str(n.value)
