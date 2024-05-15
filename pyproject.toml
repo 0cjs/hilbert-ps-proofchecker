@@ -12,8 +12,9 @@
 #   [1]: https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/
 
 [tool.pytest.ini_options]
+pythonpath = ['src']
 testpaths = ['src']
-addopts   = ['--doctest-modules']
+addopts   = ['-p pytest_pt', '--doctest-modules']
 
 
 #   binarytree emits a DeprecationWarning at …/binarytree/__init__.py:30
