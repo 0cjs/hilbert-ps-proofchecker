@@ -171,26 +171,7 @@ the top-level build/test script `Test`. (I chose pdoc because it's simple
 and seems to do what's necessary here; this isn't necesarily what I'd use
 in a production project.)
 
-I also of course always do continuous integration (CI) in its [original
-sense][fowler]. I've not set up a "CI" server for this project because it's
-quite small and the full build and test runs in a couple of seconds. I
-would normally expect that each developer would be runnning the full set of
-tests (both on `main` and on development branches) frequently; with this
-level of discipline a CI server that does this independently isn't
-necessary.
-
-That's not to say a CI server is never useful; especially in projects where
-a full build and test takes a significant amount of time, or where multiple
-platforms are supported and you don't have developers using all those
-platforms regularly, a CI server can be invaluable. But it's important to
-remember that CI is a _process,_ not a tool, and simply dropping a CI
-server (which is just a tool) into a project doesn't necessarily provide
-any improvement at all.
-
-The core thing here that gives this project CI is not a server, but that
-the top-level `Test` script does all building and testing: if that succeeds
-you know it's likely that the system (with any changes you may have made)
-is working.
+Regarding CI, see the sub-section [CI and Automatic Builds] below.
 
 ### Architecture
 
@@ -256,14 +237,40 @@ at least at the moment.
 
 #### CI and Automatic Builds
 
-In addition to the discussion in §[Top-level Files] above, I think it's
-worth mentioning that _the_ most important thing to achieve continuous
-integration is to ensure that developer have quick and easy access on their
-development machine to all tests, to the greatest degree possible, anyway.
-Developers should _not_ have to dig through YAML files in a
-`.github/workflows/` directory or similar to figure out how to test things.
-And, of course, once you have a test system that's easily run interactively
-by developers, that's also easily run by a CI server if you want one.
+This is in addition to the briefer discussion in §[Top-level Files] above.
+
+I always do continuous integration (CI) in its [original sense][fowler].
+I've not set up a "CI" server for this project because it's quite small and
+the full build and test runs in a couple of seconds. I would normally
+expect that each developer would be runnning the full set of tests (both on
+`main` and on development branches) frequently; with this level of
+discipline a CI server that does this independently isn't necessary.
+
+That's not to say a CI server is never useful; there are various situations
+where it can be helpful. Examples include where a full build/test cycle
+takes a significant amount of time, where a full test requires resources
+that most developers don't have, where you have inexperienced developers
+contributing to the project (e.g., via PRs), or where you just can't
+convince your developers to regularly run all the tests. (Though in this
+last case you probably have bigger problems than needing a CI server.)
+
+But it's important to remember that CI is a _process,_ not a tool, and
+simply dropping a CI server (which is just a tool) into a project doesn't
+necessarily provide any improvement at all.
+
+The core thing here that gives this project CI is not a server, but that
+the top-level `Test` script does all building and testing: if that succeeds
+you know it's likely that the system (with any changes you may have made)
+is working.
+
+In addition to the discussion in above, I think it's worth mentioning that
+_the_ most important thing to achieve continuous integration is to ensure
+that developer have quick and easy access on their development machine to
+all tests, to the greatest degree possible, anyway. Developers should _not_
+have to dig through YAML files in a `.github/workflows/` directory or
+similar to figure out how to test things. And, of course, once you have a
+test system that's easily run interactively by developers, that's also
+easily run by a CI server if you want one.
 
 The other important part of a test framework, if the whole thing doesn't
 run in a couple of seconds or less, is to give developers the ability to
@@ -293,6 +300,7 @@ caught _before_ a CI server would ever see them.)
 
 <!-- References in this repo's documentation -->
 [Coding Style]: #coding-style
+[CI and Automatic Builds]: #ci-and-automatic-builds
 [Top-level Files]: #top-level-files
 
 <!-- References to files in this repo -->
