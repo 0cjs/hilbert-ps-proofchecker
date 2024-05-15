@@ -103,8 +103,8 @@ class F:
             start with an underscore as a hint that developers should not
             do this.
         '''
-        left  = self.nodify(left)
-        right = self.nodify(right)
+        left  = self._nodify(left)
+        right = self._nodify(right)
 
         ty = self.nodetype(vc)
         self._tree = Node(vc)
@@ -133,7 +133,7 @@ class F:
         self._tree.validate()
 
     @staticmethod
-    def nodify(x):
+    def _nodify(x):
         ''' Return a (cloned) `binarytree.Node` AST node from `x` if it is
             one or we can make one from it. This lets users using `left`
             and `right` parameters to the constructor pass in other formula,
