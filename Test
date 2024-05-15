@@ -11,11 +11,13 @@ cd "$PROJECT_DIR"
 
 pytest "$@"
 
-echo "Generating documentation..."
+built_docs="$PROJECT_DIR/.build/hdoc"
+echo "Generating documentation to:"
+echo "file://$built_docs/index.html"
 #   This produces documentation as if it were under a top-level module
 #   named `src`. It doesn't seem possible to convince it that the modules in
 #   src/ are top-level modules; doing a chdir into src/ and trying `.` or
 #   `./` as an argument doesn't work. So for the moment we just live with it.
-PYTHONPATH=src/ pdoc -o .build/hdoc/ src/
+PYTHONPATH=src/ pdoc -o "$built_docs" src/
 
 echo OK
