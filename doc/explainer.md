@@ -1,6 +1,20 @@
 Explainer for this Repo
 =======================
 
+Note: if you have already read an earlier version of this file, you may
+find it more convenient to look at the changes since that version using Git
+log, which should produce fairly clear results that you can follow forward.
+The command you want is the following, substituting the commit ID or ref of
+interest:
+
+    git log 9fef604^.. --reverse --patch doc/explainer.md
+
+Note that the commits _after_ the one you specify will be shown; to show
+the commit/ref you specify as well, use a `^` after it to start with its
+parent.
+
+### Introduction
+
 Since the code and documentation here is intended to be read by people
 unfamiliar with my (cjs's) development style, in both the code and
 documentation (and particularly this document) I eschew my usual concision
