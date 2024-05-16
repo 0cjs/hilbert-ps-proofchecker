@@ -28,6 +28,10 @@
     to track our position in the formula.
 
     Future work:
+    * XXX Resolve the tension between a 'formula' and a 'schema.' Possibly
+      a formula should never be a schema, but a schema should be a separate
+      class that you cons with a formula, so that we always know what
+      we're using where.
     * A parser to generate a `Formula` from e.g. ``φ → (ψ → φ)``.
     * Consider how to indicate whether a `Formula` is a schema or not,
       including possibly a translation system between metavariable names
@@ -48,11 +52,16 @@ from    enum  import Enum
 from    functools  import lru_cache
 from    typing  import Optional, Union
 
-NodeValue = Union[int, str]
+Value = Union[int, str]
 ''' For some reason binarytree types ``NodeValue`` as `Any`, though with a
     comment mentioning ``Union[float, int, str]``. `Any` isn't useful to
-    us, so we define our own NodeValue, and drop `float` from it since we
+    us, so we define our own Value, and drop `float` from it since we
     never want to use that as a value.
+
+    XXX Actually, probably only 1-char `str`s should be allowed as `Value`s
+    for a formula, and ints should be allowed only in axiom schema, and
+    not (instantiated) axioms or hypotheses. See the item under
+    "Future work" in the module docstring.
 '''
 
 def NO(obj):
@@ -73,7 +82,7 @@ class F:
         reasonably nice Polish notation syntax (embedded in Python) for
         construction and viewing with `repr()`:
 
-        >>> str(F('→', F('→', NO('ψ'), NO('φ')), F('→', 'φ', 'ψ')))
+        >>> str(F('→', F('→', NO(ψ), NO(φ)), F('→', φ, ψ)))
         '(¬ψ → ¬φ) → (φ → ψ)'
 
         See `__init__()` for construction details.
@@ -88,7 +97,7 @@ class F:
 
     class InternalError(RuntimeError): '@private'
 
-    def __init__(self, vc: NodeValue, left=None, right=None):
+    def __init__(self, vc: Union["F", Value], left=None, right=None):
         ''' Propositional formula constructor. This takes a propositional
             value or connective `vc` and, optionally, left and right
             sub-nodes for the AST, which may be formulae of this class,
@@ -96,13 +105,13 @@ class F:
             turned into a node.
 
             `vc` must be a valid variable or connective;
-            see `nodetype()` below for information on what is valid.
+            see `valtype()` below for information on what is valid.
 
             `left` and `right` may be:
             - values of this class;
             - AST node values with a `value` property; or
             - `str` or `int` values that are variables (i.e., where
-              `nodetype()` will return `VAR`).
+              `valtype()` will return `VAR`).
 
             Formulae ought to be immutable, but Python doesn't have very
             good facilities for doing this, so we do our best by ensuring
@@ -115,7 +124,10 @@ class F:
         left  = self._nodify(left)
         right = self._nodify(right)
 
-        ty = self.nodetype(vc)
+        if isinstance(vc, self.__class__):
+            vc = vc._tree.value
+
+        ty = self.valtype(vc)
         self._tree : Node = Node(vc)
         self._tree.type = ty
         if ty == self.VAR:
@@ -165,8 +177,12 @@ class F:
         if isinstance(x, F):        return x._tree.clone()
         'anything else:';           return F(x)._tree.clone()
 
+    #   XXX The following has various typing issues because of the
+    #   conflict between the duck typing it started with and the
+    #   addition of type signatures later on. We need to come back
+    #   to this after some further development and sort it out.
     @staticmethod
-    def nodetype(obj) -> NodeType:
+    def valtype(obj: Union["F",Node,Value]) -> NodeType:
         ''' Determine whether a node is a `VAR`, `MONADIC` or `DYADIC`,
             raising `ValueError` if it's none of the above.
 
@@ -189,6 +205,9 @@ class F:
             XXX This could do better error checking, but really ought to be
             replaced with a proper parser that can parse full expressions.
         '''
+        #   XXX This first line to get the `Node` out of an `F` somehow
+        #   feels not terribly nice; let's think of a way to clean this up.
+        obj = getattr(obj, '_tree', obj)
         val = getattr(obj, 'value', obj)
 
         #   Python has no "natural numbers" typeclass or similar idea
@@ -205,7 +224,7 @@ class F:
         #   user cares to use, so long as we can distinguish between
         #   letters, numbers, and anything else.
         if hasattr(val, 'isalpha') and hasattr(val, 'isnumeric'):
-            if len(val) != 1:   # XXX Do we really care about this?
+            if len(val) != 1:   # type: ignore [arg-type]
                 raise ValueError(f'length must be 1: {repr(val)}')
             if val == '¬':          return F.MONADIC
             if val.isalpha():       return F.VAR
@@ -264,7 +283,7 @@ class F:
         '''
         tree = self._tree
         s = self._strF(tree)
-        if self.nodetype(tree) == self.DYADIC:
+        if self.valtype(tree) == self.DYADIC:
             return s[1:-1]      # strip off outer parens
         else:
             return s
@@ -275,10 +294,29 @@ class F:
             representation of the formula expression.
 
             This assumes that the tree structure is correct for
-            the `nodetype()`s of each node.
+            the `valtype()`s of each node.
         '''
         s   = F._strF
-        typ = F.nodetype(n)
+        typ = F.valtype(n)
         if typ == F.VAR:        return str(n.value)
         if typ == F.MONADIC:    return '¬' + s(n.right)
         return f'({s(n.left)} {str(n.value)} {s(n.right)})'
+
+####################################################################
+#   Variables, for convenience.
+#
+#   These allow us to use just e.g. ``φ`` in Python code, rather than
+#   having to type ``'φ'`` as a quoted string. The names and their
+#   RFC 1345 digraphs (entered with Ctrl-K <c1><c2>) are:
+#
+#   - phi f*,  psi q*,  chi *f, theta h*, tau t*,  eta y*,  zeta z*
+#
+#   This brings up an issue with our naming of the formula class: ``F`` is
+#   also something people would reasonably want to use as a variable.
+#   Perhaps it should be renamed to, e.g., ``F_``. In which case we might
+#   also rename `NO` to ``N_``.
+#
+#   XXX I can't see a way to docstring this without making a mess of the code.
+
+φ, ψ, χ, θ, τ, η, ζ = map(F, 'φψχθτηζ')
+A, B, C, D, E       = map(F, 'ABCDE')
