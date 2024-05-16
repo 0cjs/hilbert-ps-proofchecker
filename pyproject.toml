@@ -14,7 +14,7 @@
 [tool.pytest.ini_options]
 pythonpath = ['src']
 testpaths = ['src']    # used only when pytest started from rootdir
-addopts   = ['-p pytest_pt', '--doctest-modules']
+addopts   = ['-q', '-p pytest_pt', '--doctest-modules']
 
 
 #   binarytree emits a DeprecationWarning at …/binarytree/__init__.py:30
