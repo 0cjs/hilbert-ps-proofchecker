@@ -99,7 +99,8 @@ def test_repr(s, x): assert s == repr(x)
     ( True,  F('φ'),                F('φ')),
     ( True,  F('→', NO('a'), 'b'),  F('→', NO('a'), 'b')),
     #   Actually, these two are technically equal in the sense we probably
-    #   want, because
+    #   want, because the variables are the same under subtitution.
+    #   See the docstring for more details.
     (False,  F('φ'),                NO('ψ')),
 ])
 def test_F_eq(eq, x, y): assert eq is (x == y)

@@ -207,7 +207,8 @@ class F:
         ''' Return `True` if two formulae are the same, *including
             variable names.* Technically we should probably be
             indicating equality if the variables can be made the same
-            through subsitution. @public
+            through subsitution, though that's not entirely clear.
+            (A domain expert needs to be consulted about this.) @public
         '''
         if not isinstance(other, self.__class__):
             return NotImplemented
