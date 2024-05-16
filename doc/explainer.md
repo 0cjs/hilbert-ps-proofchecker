@@ -253,18 +253,11 @@ all (with no type hints in my source code yet), I had to deal with the
 `binarytree` library, which was giving the usual "missing library stubs or
 py.typed marker" error. I chose to deal with this by building local stubs
 for the library (`stubgen -o mypy-stubs -p binarytree` and adding `# type:
-ignore` to the `graphviz` import) and commiting those. This leaves us set
-to add annotations to the `src/*.py` files.
-
-The `src/*.pt` tests are not currently checked; there's a bit of work
-relating to module names that seems to be required there. But we should
-look at [pytest-mypy] first, to see if that's a better way of going at it.
-(Assuming we want to type check our tests at all; it's not clear to me how
-helpful that is.)
-
-This is all being run mypy's non-strict mode, of course. Whether that would
-be turned out would I think depend heavily on the type of code one is
-writing.
+ignore` to the `graphviz` import) and commiting those. I've also added a
+few type annotations to [`src/formula.py`], but I'm not convinced that
+they're all that useful there. (They probably would have helped more if I'd
+had them available from the start.) `src/*.pt` tests are also all type
+checked, though I don't use type annotations at all there at the moment.
 
 I'm familiar with other tools for checking test code coverage and the like,
 but I don't feel any of them are worth the time to install in this project,
