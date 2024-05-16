@@ -304,7 +304,7 @@ caught _before_ a CI server would ever see them.)
 [Top-level Files]: #top-level-files
 
 <!-- References to files in this repo -->
-[`.build/hdoc/`] ../.build/hdoc/
+[`.build/hdoc/`]: ../.build/hdoc/
 [`Test`]: ../Test
 [`doc/TODO.md`]: ../doc/TODO.md
 [`pactivate`]: ../pactivate
