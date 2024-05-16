@@ -46,6 +46,14 @@
 from    binarytree  import Node
 from    enum  import Enum
 from    functools  import lru_cache
+from    typing  import Optional, Union
+
+NodeValue = Union[int, str]
+''' For some reason binarytree types ``NodeValue`` as `Any`, though with a
+    comment mentioning ``Union[float, int, str]``. `Any` isn't useful to
+    us, so we define our own NodeValue, and drop `float` from it since we
+    never want to use that as a value.
+'''
 
 def NO(obj):
     ''' Convenience constructor for negating a formula. This accepts
@@ -72,14 +80,15 @@ class F:
     '''
 
     #   We use an Enum here mainly because it gives nice repr in error output.
-    _nt = Enum('_nt', ['VAR', 'MONADIC', 'DYADIC', ])
-    VAR     = _nt.VAR       ;'Node type is a variable or metavariable.'
-    MONADIC = _nt.MONADIC   ;'Node type is a monadic conective. (¬)'
-    DYADIC  = _nt.DYADIC    ;'Node type is a dyadic connective. (→, ↔, etc.)'
+    NodeType = Enum('NodeType', ['VAR', 'MONADIC', 'DYADIC', ])
+    ' Variable or connective. '
+    VAR      = NodeType.VAR     ;'Node type is a variable or metavariable.'
+    MONADIC  = NodeType.MONADIC ;'Node type is a monadic conective. (¬)'
+    DYADIC   = NodeType.DYADIC  ;'Node type is a dyadic connective. (→, ↔, etc.)'
 
     class InternalError(RuntimeError): '@private'
 
-    def __init__(self, vc, left=None, right=None):
+    def __init__(self, vc: NodeValue, left=None, right=None):
         ''' Propositional formula constructor. This takes a propositional
             value or connective `vc` and, optionally, left and right
             sub-nodes for the AST, which may be formulae of this class,
@@ -107,7 +116,7 @@ class F:
         right = self._nodify(right)
 
         ty = self.nodetype(vc)
-        self._tree = Node(vc)
+        self._tree : Node = Node(vc)
         self._tree.type = ty
         if ty == self.VAR:
             if left or right:
@@ -133,7 +142,7 @@ class F:
         self._tree.validate()
 
     @staticmethod
-    def _nodify(x):
+    def _nodify(x) -> Optional[Node]:
         ''' Return a (cloned) `binarytree.Node` AST node from `x` if it is
             one or we can make one from it. This lets users using `left`
             and `right` parameters to the constructor pass in other formula,
@@ -157,7 +166,7 @@ class F:
         'anything else:';           return F(x)._tree.clone()
 
     @staticmethod
-    def nodetype(obj):
+    def nodetype(obj) -> NodeType:
         ''' Determine whether a node is a `VAR`, `MONADIC` or `DYADIC`,
             raising `ValueError` if it's none of the above.
 
@@ -203,7 +212,7 @@ class F:
             if not val.isnumeric(): return F.DYADIC
         raise ValueError(f'bad value: {repr(val)}')
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         ''' Return `True` if two formulae are the same, *including
             variable names.* Technically we should probably be
             indicating equality if the variables can be made the same
@@ -214,7 +223,7 @@ class F:
             return NotImplemented
         return self._receq(self._tree, other._tree)
 
-    def _receq(self, x, y):
+    def _receq(self, x: Node, y: Node) -> bool:
         ' Recursive `binarytree.Node` value comparison for `__eq__()`. '
         if x is None and y is None: return True
         if x is None  or y is None: return False
@@ -222,7 +231,7 @@ class F:
         return self._receq(x.left,  y.left) \
            and self._receq(x.right, y.right)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         ''' Somewhat hacky repr, though good enough for the moment.
             Consider removing the ``F()`` around variables, since
             those can be passed in as just strings, and perhaps even
@@ -233,7 +242,7 @@ class F:
         '''
         return self._recrep(self._tree)
 
-    def _recrep(self, node):
+    def _recrep(self, node: Node) -> str:
         ''' Recursive generation of a string in repr()-ish format the value
             of a given `binarytree.Node` and its children. Just for the use
             of `__repr__()`.
@@ -249,7 +258,7 @@ class F:
             s += self._recrep(node.right)
         return s + ')'
 
-    def __str__(self):
+    def __str__(self) -> str:
         ''' Pretty-print the AST an expression with appropriate parentheses
             and spacing.
         '''
@@ -261,7 +270,7 @@ class F:
             return s
 
     @staticmethod
-    def _strF(n):
+    def _strF(n: Node) -> str:
         ''' This takes a `binarytree.Node` `n` and returns the string
             representation of the formula expression.
 
