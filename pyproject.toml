@@ -30,9 +30,10 @@ filterwarnings = [
 ]
 
 [tool.mypy]
-#   It's not clear yet if we should have 'src/**/*.pt' (our tests) in the
-#   list of files checked by mypy. For the moment we don't because checking
-#   them produces a 'Duplicate module named "__main__"' error that we need
-#   to look at. (mypy gives a useful URL with this error.)
-files       = [ 'src/', ]
+files       = [ 'src/', 'src/**/*.pt' ]
 mypy_path   = [ 'mypy-stubs/', ]
+#   mypy normally loads non-*.py files as a module named __main__, causing
+#   a collsion if there's more than one of them. The following option changes
+#   mypy to name the module after the filename (including extension), which
+#   allows checking multiple *.pt files in one run.
+scripts_are_modules = true
