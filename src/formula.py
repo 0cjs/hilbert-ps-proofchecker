@@ -261,7 +261,7 @@ class F:
             return s
 
     @staticmethod
-    def _strF(n, depth=0):
+    def _strF(n):
         ''' This takes a `binarytree.Node` `n` and returns the string
             representation of the formula expression.
 
