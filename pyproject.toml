@@ -13,7 +13,7 @@
 
 [tool.pytest.ini_options]
 pythonpath = ['src']
-testpaths = ['src']
+testpaths = ['src']    # used only when pytest started from rootdir
 addopts   = ['-p pytest_pt', '--doctest-modules']
 
 

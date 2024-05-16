@@ -2,6 +2,7 @@
 set -Eeuo pipefail
 trap 'rc=$?; echo 2>&1 "ERROR"; exit $rc' ERR
 
+START_DIR="$(pwd -P)"
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 cd "$PROJECT_DIR"
 
@@ -9,7 +10,28 @@ cd "$PROJECT_DIR"
 
 . ./pactivate -q
 
-pytest "$@"
+#   Because pytest is taking user-specified parameters and these may be
+#   relative paths (often generated via command-line completion), we cd to
+#   the directory where we were started if it's under $PROJECT_DIR so that
+#   these paths Just Work. But note that this disables the `testpaths`
+#   parameter, so if you're running ../Test from under doc/, it will search
+#   the CWD and find nothing.
+#
+#   We do _not_ change to the $START_DIR if it's outside the $PROJECT_DIR
+#   tree because when started without arguments and outside the rootdir
+#   pytest will search for tests under a CWD outsde the project dir, which
+#   is clearly not what we ever want.
+#
+if [[ ${START_DIR#$PROJECT_DIR/} = /* ]]; then
+    #   Outside or at $PROJECT_DIR; paths relative to $PROJECT_DIR.
+    pytest "$@"
+else
+    #   Under $PROJECT_DIR: paths relative to user's CWD.
+    (    command cd "$START_DIR" \
+      && pytest "$@" \
+      && command cd "$PROJECT_DIR"
+    )
+fi
 
 built_docs="$PROJECT_DIR/.build/hdoc"
 echo "Generating documentation to:"
