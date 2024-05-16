@@ -179,6 +179,19 @@ This does considerable syntax checking; much of this was driven by wanting
 to write a `__str__()` method that gives a nice representation of formulae
 as mathematicians like to see them, which was demonstrated above.
 
+### Data Structures, Logic
+
+[`src/proof.py`] contains the `Proof` class, which represents both the data
+structure for proofs and has a `valid` attribute indicating whether or not
+the proof is valid. A separate data structure/class, `Step`, is used for
+proof steps. Each axiom schema is represented by a separate `Schema` class
+in [`src/schema.py`] which is instantiated with a formula `Fm`
+([`src/formula.py`]) representing the schema and handles substitution of
+formulae for metavariables in the schema to instantiate an axiom.
+
+[`src/proof.pt`] includes a a test that shows that this validates the [idALT]
+proof from Metamath.
+
 ### Documentation
 
 §"Data Structures" above (and this file, of course) is the best example here
@@ -349,6 +362,10 @@ caught _before_ a CI server would ever see them.)
 [`src/formula.pt`]: ../src/formula.pt
 [`src/formula.py`]: ../src/formula.py
 [`src/nodocF.py`]: ../src/nodocF.py
+[`src/proof.pt`]: ../src/proof.pt
+[`src/proof.py`]: ../src/proof.py
+[`src/pytest_pt.py`]: ../src/pytest_pt.py
+[`src/schema.py`]: ../src/schema.py
 
 [so 50169991]: https://stackoverflow.com/a/50169991/107294
 
@@ -369,5 +386,6 @@ caught _before_ a CI server would ever see them.)
 [pytest-mypy]: https://pypi.org/project/pytest-mypy/
 
 <!-- Other References -->
-[fowler]: https://martinfowler.com/articles/continuousIntegration.html
 [DSL]: https://en.wikipedia.org/wiki/Domain-specific_language
+[fowler]: https://martinfowler.com/articles/continuousIntegration.html
+[idALT]: https://us.metamath.org/mpeuni/idALT.html

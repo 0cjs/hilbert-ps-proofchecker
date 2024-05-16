@@ -1,0 +1,93 @@
+from    formula  import *
+from    proof  import *
+from    re  import escape as resc, match as rematch
+import  pytest
+
+p_ = pytest.mark.parametrize
+
+
+def test_repr():
+    assert 'Given(17)'      == repr(Given(17))
+    assert 'Axiom(14)'      == repr(Axiom(14))
+    assert 'Axiom(3,(A,B))' == repr(Axiom(3,[A,B]))
+    assert 'MP(7,3)'        == repr(MP(7, 3))
+
+@p_('s, steps', [
+    ('Expected step 1 but got step 2', [ (2, Given(1)) ]),
+    ('Expected step 2 but got step 3', [ (1, Given(1)), (3, Given(3)), ]),
+])
+def test_step_sequence(s, steps):
+    with pytest.raises(Proof.StepError) as ex:
+        Proof((), [A, B, C], steps)
+    assert ex.match(s)
+
+####################################################################
+
+PS = AXIOMS['PS']
+
+def test_givens_ref_error():
+    ' XXX Considerably more error cases could (and should?) be tested here. '
+    with pytest.raises(Proof.StepError) as ex:
+        Proof(PS, (), [(1, Given(1)), ])
+    assert ex.match(resc(
+        'Step 1 Given(1) references non-existent Given index 1'))
+
+def test_mp_ref_error():
+    ' XXX Considerably more error cases could (and should?) be tested here. '
+    with pytest.raises(Proof.StepError) as ex:
+        Proof(PS, (), [(1, MP(2,3)), ])
+    assert ex.match(resc('Step 1 MP(2,3) references non-existent'))
+
+def test_givens_proof_details():
+    givens = (  P,
+                Im(P, Q), )
+    steps = (   (1, Given(1)),
+                (2, Given(2)),
+                (3, MP(1,2)), )
+    pr = Proof(PS, givens, steps)
+
+    assert (Fm(P), Im(P, Q)) == (pr.given(1), pr.given(2))
+    assert (Fm(P), Im(P, Q)) == (pr.step(1).fm, pr.step(2).fm)
+    assert (True, True) == (pr.step(1).valid, pr.step(2).valid)
+
+    h = str(pr)
+    print(h)
+    assert 'from Given(2)' in h
+    assert '⊢ P → Q' in h
+    assert 'from MP(1,2)' in h
+    assert '⊢ Q' in h
+
+    assert pr.valid
+
+@p_('valid, givens, steps', [
+    (True,  [φ],            [(1,Given(1))]),
+    (False, [Im(P,Q)],      [(1,Given(1)), (2,MP(1,1))]),
+])
+def test_givens_proofs(valid, givens, steps):
+    ps = Proof(PS, givens, steps)
+    print(ps)
+    assert valid == ps.valid
+
+def test_axiom_proof_details():
+    pr = Proof(PS, (), ((1, Axiom(1,[P,Q])),))
+    assert Im(φ, Im(ψ, φ)) == pr.axiom_schema(1).fm
+    assert Im(P, Im(Q, P)) == pr.step(1).fm
+
+    expected = r'1:  ⊢ P → \(Q → P\)  * from Axiom\(1,\(P,Q\)\)'
+    print(expected); print(str(pr))
+    assert rematch(expected, str(pr))
+
+@p_('valid, assertion, steps', [
+    (True,  'φ → (ψ → φ)',      ((1, Axiom(1), ),)),
+    (True,  'P → (Q → P)',      ((1, Axiom(1,[P,Q])),)),
+    (True,  'A → (A → A)',      ((1, Axiom(1,[A,A])),)),
+    (True,  'φ → φ',            ((1, Axiom(1, [φ, φ])),          # idALT
+                                 (2, Axiom(1, [φ, Im(φ,φ)])),
+                                 (3, Axiom(2, [φ, Im(φ,φ), φ])),
+                                 (4, MP(2,3)),
+                                 (5, MP(1,4)),
+                                )),
+])
+def test_axioms_proofs(valid, assertion, steps):
+    ps = Proof(PS, (), steps)
+    assert (valid, assertion) == (ps.valid, str(ps.assertion))
