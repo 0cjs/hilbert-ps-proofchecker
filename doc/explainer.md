@@ -234,16 +234,37 @@ the [Top-level Files] section.
 
 #### Testing
 
-Currently the only additional testing beyond the pytest tests (in the `.pt`
-files) is testing of any `>>>` notations in the docstrings.
+Currently the following testing is done by default:
+- mypy type checks
+- pytest tests in `.pt` files
+- docstring `>>>` annotations in `.py` files
 
-An obvious additional testing system would be `mypy`; I am currently
-looking into this. (When I last used it, about six years ago, it was
-incredibly slow, possibly because it didn't do any caching. I see now from
-the `.mypy_cache/` that appeared that it does now cache, so the cost of
-using it may now be low enough to justify its benefits. However it
-currently has a number of complaints about third-party support code that
-need to be dealt with (see the [`doc/TODO.md`] for more details on this.)
+The latter two are both working fine, and test selection etc. can be
+done by passing `pytest` arguments to the `Test` script.
+
+The last time I tried using mypy was about six years ago, and for
+command-line use it was far too slow for my application. That speed problem
+seems to have been fixed in modern versions of mypy, probably due to having
+caching, interface files, etc., so it's obviously time for me to take it up
+again.
+
+The mypy type checking is still a work in progress. To get it passing at
+all (with no type hints in my source code yet), I had to deal with the
+`binarytree` library, which was giving the usual "missing library stubs or
+py.typed marker" error. I chose to deal with this by building local stubs
+for the library (`stubgen -o mypy-stubs -p binarytree` and adding `# type:
+ignore` to the `graphviz` import) and commiting those. This leaves us set
+to add annotations to the `src/*.py` files.
+
+The `src/*.pt` tests are not currently checked; there's a bit of work
+relating to module names that seems to be required there. But we should
+look at [pytest-mypy] first, to see if that's a better way of going at it.
+(Assuming we want to type check our tests at all; it's not clear to me how
+helpful that is.)
+
+This is all being run mypy's non-strict mode, of course. Whether that would
+be turned out would I think depend heavily on the type of code one is
+writing.
 
 I'm familiar with other tools for checking test code coverage and the like,
 but I don't feel any of them are worth the time to install in this project,
@@ -346,6 +367,7 @@ caught _before_ a CI server would ever see them.)
 [binarytree]: https://pypi.org/project/binarytree/
 [pdoc]: https://pypi.org/project/pdoc/
 [pypi-pytest-pt]: https://pypi.org/project/pytest-pt/
+[pytest-mypy]: https://pypi.org/project/pytest-mypy/
 
 <!-- Other References -->
 [fowler]: https://martinfowler.com/articles/continuousIntegration.html

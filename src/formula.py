@@ -72,7 +72,7 @@ class F:
     '''
 
     #   We use an Enum here mainly because it gives nice repr in error output.
-    _nt = Enum('NodeType', ['VAR', 'MONADIC', 'DYADIC', ])
+    _nt = Enum('_nt', ['VAR', 'MONADIC', 'DYADIC', ])
     VAR     = _nt.VAR       ;'Node type is a variable or metavariable.'
     MONADIC = _nt.MONADIC   ;'Node type is a monadic conective. (¬)'
     DYADIC  = _nt.DYADIC    ;'Node type is a dyadic connective. (→, ↔, etc.)'

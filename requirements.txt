@@ -1,3 +1,4 @@
 binarytree
+mypy
 pdoc
 pytest-pt

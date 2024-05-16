@@ -28,3 +28,11 @@ addopts   = ['-p pytest_pt', '--doctest-modules']
 filterwarnings = [
     'ignore:pkg_resources is deprecated as an API:DeprecationWarning:binarytree:30',
 ]
+
+[tool.mypy]
+#   It's not clear yet if we should have 'src/**/*.pt' (our tests) in the
+#   list of files checked by mypy. For the moment we don't because checking
+#   them produces a 'Duplicate module named "__main__"' error that we need
+#   to look at. (mypy gives a useful URL with this error.)
+files       = [ 'src/', ]
+mypy_path   = [ 'mypy-stubs/', ]
