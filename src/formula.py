@@ -73,6 +73,18 @@ def No(fm):
     '''
     return Fm('¬', None, fm)
 
+def Im(fma, fmc):
+    ''' Convenience constructor for constructing an implication ``A → C``,
+        where `fma` is the antecedent and `fmc` is the consequent. These
+        take anything that can be given to the `left` and `right`
+        parameters of `Fm`.
+
+        It's not entirely clear how useful this is in larger expressions,
+        where having an explicit arrow helps with readability, but for
+        smaller expressions this seems helpful maybe?
+    '''
+    return Fm('→', fma, fmc)
+
 class Fm:
     ''' A propositional formula represented as an AST of `binarytree.Node`s,
         each of which is:

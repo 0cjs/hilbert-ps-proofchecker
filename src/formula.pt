@@ -80,16 +80,6 @@ def test_F_errors(arg0, arg1, arg2, msgfrag):
     with pytest.raises(ValueError) as ex: Fm(arg0, arg1, arg2)
     assert ex.match(msgfrag)
 
-def test_No():
-    f = No(φ); t = f._tree
-    assert (    '¬',   None,           'φ',         None,          None) \
-        == (t.value, t.left, t.right.value, t.right.left, t.right.right)
-
-    f = No(Fm('→', 'a', 'b')); t = f._tree
-    print(t)
-    assert ('¬', '→', 'a', 'b') \
-        == (t.value, t.right.value, t.right.left.value, t.right.right.value)
-
 @p_('s, x', [
     ("Fm('φ')",                         Fm(φ)),
     ("Fm('φ')",                         φ ),
@@ -134,3 +124,34 @@ def test_F_eq(eq, x, y): assert eq is (x == y)
 
 ])
 def test_F_str(s, f): assert s == str(f)
+
+####################################################################
+#   Convenience constructors
+#
+#   Since we've already confirmed above that `Fm.__str__()` is working,
+#   we can take the easy way out here and simply test that convenience
+#   constructors through that.
+
+@p_('s, arg', [
+    ('¬φ',             φ),
+    ('¬¬φ',         No(φ)),
+    ('¬(A → B)',    Im(A, B))
+])
+def test_No(s, arg):
+    assert s == str(No(arg))
+
+#   f = No(φ); t = f._tree
+#   assert (    '¬',   None,           'φ',         None,          None) \
+#       == (t.value, t.left, t.right.value, t.right.left, t.right.right)
+
+#   f = No(Fm('→', 'a', 'b')); t = f._tree
+#   print(t)
+#   assert ('¬', '→', 'a', 'b') \
+#       == (t.value, t.right.value, t.right.left.value, t.right.right.value)
+
+@p_('s, antecedent, consequent', [
+    ('ψ → φ',        ψ, φ),
+    ('φ → (ψ → φ)',  φ, Im(ψ, φ)),
+])
+def test_Im(s, antecedent, consequent):
+    assert s == str(Im(antecedent, consequent))
