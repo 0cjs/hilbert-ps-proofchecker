@@ -1,4 +1,3 @@
-from    binarytree  import Node
 from    formula  import *
 import  pytest
 
@@ -7,15 +6,15 @@ p_ = pytest.mark.parametrize
 ####################################################################
 #   Value types
 
-@p_('x', ['a', 'A', 'x', 'φ', 'Ξ', Node('φ'), Fm('φ'), φ, A, ])
+@p_('x', ['a', 'A', 'x', 'φ', 'Ξ', Fm('φ'), φ, A, ])
 def test_valtype_var(x):
     assert Fm.valtype(x) is Fm.VAR
 
-@p_('x', ['¬', Node('¬'), Fm('¬', None, φ), ])
+@p_('x', ['¬', Fm('¬', None, φ), ])
 def test_valtype_monadic(x):
     assert Fm.valtype(x) is Fm.MONADIC
 
-@p_('x', ['→', '↔', '∧', '∨', '+', '*', Node('→'), Fm('→', ψ, φ), ])
+@p_('x', ['→', '↔', '∧', '∨', '+', '*', Fm('→', ψ, φ), ])
 def test_valtype_dyadic(x):
     assert Fm.valtype(x) is Fm.DYADIC
 
@@ -28,53 +27,62 @@ def test_valtype_bad(x):
 #   ASTs
 
 def test_F_inst_str():
-    ''' A couple of extremely simple tests because the majority of Node
-        construction behviour is tested in the Node validation above, and
+    ''' A couple of extremely simple tests because the majority of node
+        construction behviour is tested in the node validation above, and
         much of the tree behviour is exercised by tests for things even
         like `__repr__()` or `__eq()__`.
 
         The three simple correct cases we need to cover are just a
         single variable, a monadic function, and a dyadic function.
     '''
-    f = Fm('α'); t = f._tree
-    assert ('α', None, None) == (t.value, t.left, t.right)
+    f = Fm('α')
+    assert ('α', Fm.VAR, None, None) == (f.value, f.type, f.left, f.right)
 
-    f = Fm('¬', None, 'β'); t = f._tree
-    assert (    '¬',   None,           'β',         None,          None) \
-        == (t.value, t.left, t.right.value, t.right.left, t.right.right)
+    f = Fm('¬', None, 'β')
+    assert (    '¬', Fm.MONADIC,  None,           'β',         None,          None) \
+        == (f.value,     f.type, f.left, f.right.value, f.right.left, f.right.right)
 
-    f = Fm('→', 'α', 'β'); t = f._tree
-    assert (    '→',          'α',           'β') \
-        == (t.value, t.left.value, t.right.value)
+    f = Fm('→', 'α', 'β')
+    assert (    '→', Fm.DYADIC,          'α',           'β') \
+        == (f.value, f.type,    f.left.value, f.right.value)
     assert (       None,         None,         None,          None) \
-        == (t.left.left, t.left.right, t.right.left, t.right.right)
+        == (f.left.left, f.left.right, f.right.left, f.right.right)
 
 def test_Fm_inst_Fm():
     ''' Test instantiation of F where the `vc` is a Formula, rather
         than just a string or int.
     '''
-    assert 'φ' == Fm(Fm('φ'))._tree.value
+    assert 'φ' == Fm(Fm('φ')).value
+
+@p_('attrname', ['value', 'type', 'left', 'right'])
+def test_Fm_constant_value(attrname):
+    ''' Though we can't have truly immutable objects in Python, we can
+        ensure at least that public accessors don't allow mutation as
+        a strong hint to developers.
+    '''
+    f = Im(ψ, φ)
+    with pytest.raises(AttributeError) as ex:
+        setattr(f, attrname, 'X')
+    assert ex.match('has no setter')
 
 @p_('x, y', [
     (      'a',       'b'),
-    (Node('a'), Node('b')),
     (  Fm('a'),   Fm('b')),
 ])
 def test_F_nodify(x, y):
-    ''' Ensure we can pass single values, `binarytree.Node` values
-        and `Fm` values to the `Fm` constructor.
-    '''
+    ' Ensure we can pass single values or `Fm` values to the `Fm` constructor. '
     f = Fm('→', x, y);
-    assert ('a', 'b') == (f._tree.left.value, f._tree.right.value)
+    assert ('a', 'b') == (f.left.value, f.right.value)
 
 @p_('arg0, arg1, arg2, msgfrag', [
-    ('α',  'A', None, 'may not have children'),
-    ('α', None,  'B', 'may not have children'),
-    ('¬', None, None, 'must have only right child'),
-    ('¬',  'A',  'B', 'must have only right child'),
-    ('→', None, None, 'must have two children'),
-    ('→', None,  'B', 'must have two children'),
-    ('→',  'A', None, 'must have two children'),
+    ('PQ', None, None, 'length must be 1'),
+    ('α',   'A', None, 'may not have children'),
+    ('α',  None,  'B', 'may not have children'),
+    ('¬',  None, None, 'must have only right child'),
+    ('¬',   'A',  'B', 'must have only right child'),
+    ('→',  None, None, 'must have two children'),
+    ('→',  None,  'B', 'must have two children'),
+    ('→',   'A', None, 'must have two children'),
 ])
 def test_F_errors(arg0, arg1, arg2, msgfrag):
     with pytest.raises(ValueError) as ex: Fm(arg0, arg1, arg2)
@@ -95,10 +103,12 @@ def test_repr(s, x): assert s == repr(x)
     (False,  Fm(φ),                 Fm('→', φ, φ)),
     ( True,  Fm(φ),                 Fm(φ)),
     ( True,  Fm('→', No('a'), 'b'), Fm('→', No('a'), 'b')),
+    ( True,  No(No(No(No(No(A))))), No(No(No(No(No(A)))))),
     #   Actually, these two are technically equal in the sense we probably
     #   want, because the variables are the same under subtitution.
     #   See the docstring for more details.
     (False,  Fm(φ),                No(ψ)),
+    (False,  No(No(No(No(No(A))))), No(No(No(No(No(B)))))),
 ])
 def test_F_eq(eq, x, y): assert eq is (x == y)
 

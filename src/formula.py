@@ -8,14 +8,14 @@
     operation, e.g., where ``pq`` is considered to mean ``p⋅q``.
 
     We do not currently support *schemas* from which formulae can be
-    *instantiated,* in which case the variables are *metavariables,* often
-    described by an *index.* (Variables and metavariables can never be
-    mixed in one object; it's either a formula with variables or a schema
-    with metavariables.)
+    *instantiated,* in which case the variables would be *metavariables,*
+    often described by an *index.* (Variables and metavariables can never
+    be mixed in one object; it's either a formula with variables or a
+    schema with metavariables.)
 
-    A formula is represented by the `Fm` class which holds a `binarytree`
-    expressing its `abstract syntax tree`_ (AST), with connectives at the
-    internal nodes and variables at the leaf nodes.
+    A formula is represented by the `Fm` class which is a binary tree
+    expressing the `abstract syntax tree`_ (AST), of the formula, with
+    connectives at the internal nodes and variables at the leaf nodes.
 
     Many of the functions operating on this AST are recursive, and thus the
     total size of the formula they can process (technically, its depth)
@@ -32,32 +32,17 @@
     * A parser to generate a `Formula` from e.g. ``φ → (ψ → φ)``.
     * Consider how to indicate whether a `Formula` is a schema or not or,
       more likely create a separate schema class, including possibly a
-      translation system between metavariable names and indices (``φ → (ψ →
-      φ)`` to ``1 → (2 → 1)``).
+      translation system between metavariable names and indices
+      (``φ → (ψ → φ)`` to ``1 → (2 → 1)``).
     * It would be neat to check that a `Formula` is a tautology.
       (PySAT may help if the formulas get complex.) But, per Nishant,
       the check is NP-complete, so not cheap.
 
     .. _abstract syntax tree: https://en.wikipedia.org/wiki/Abstract_syntax_tree
 '''
-from    binarytree  import Node
 from    enum  import Enum
 from    functools  import lru_cache
 from    typing  import Optional, Union
-
-Value = str
-''' For some reason binarytree types ``NodeValue`` as `Any`, though with a
-    comment mentioning ``Union[float, int, str]``. `Any` isn't useful to
-    us, so we define our own Value, and drop `float` from it since we
-    never want to use that as a value. We also drop `int` because it's
-    not currently used by anything and we're removig integer variable
-    names in preparation for bulding a separate class for (axiom) schema.
-
-    XXX Actually, probably only 1-char `str`s should be allowed as `Value`s
-    for a formula, and ints should be allowed only in axiom schema, and
-    not (instantiated) axioms or hypotheses. See the item under
-    "Future work" in the module docstring.
-'''
 
 def No(fm):
     ''' Convenience constructor for negating a formula. This accepts
@@ -81,14 +66,17 @@ def Im(fma, fmc):
     return Fm('→', fma, fmc)
 
 class Fm:
-    ''' A propositional formula represented as an AST of `binarytree.Node`s,
-        each of which is:
-        - a leaf node whose value is a variable or metavariable name/index, or
-        - an internal node which is a monadic or dyadic connective.
+    ''' A propositional formula represented as an AST. Each `Fm` is:
+        - a leaf node whose value is a variable name, or
+        - an internal node which is a monadic, connective with a right
+          child or dyadic connective, with left and right children.
 
         This is named ``Fm`` rather than ``Formula`` as a short name gives
         a reasonably nice Polish notation syntax (embedded in Python) for
-        construction and viewing with `repr()`:
+        construction and viewing with `repr()` and `str()`:
+
+        >>> repr(Fm('→', 'A', Fm('→', B, No(C))))
+        "Fm('→', Fm('A'), Fm('→', Fm('B'), Fm('¬', right=Fm('C'))))"
 
         >>> str(Fm('→', Fm('→', No(ψ), No(φ)), Fm('→', φ, ψ)))
         '(¬ψ → ¬φ) → (φ → ψ)'
@@ -105,99 +93,88 @@ class Fm:
 
     class InternalError(RuntimeError): '@private'
 
-    def __init__(self, vc: Union["Fm", Value], left=None, right=None):
+    def __init__(self, vc: Union["Fm", str], left=None, right=None):
         ''' Propositional formula constructor. This takes a propositional
             value or connective `vc` and, optionally, left and right
-            sub-nodes for the AST, which may be formulae of this class,
-            `binarytree.Node`s of an formula AST, or a plain variable to be
-            turned into a node.
+            sub-nodes for the AST.
 
-            `vc` must be a valid variable or connective;
-            see `valtype()` below for information on what is valid.
+            `vc` must be a valid variable or connective; see `valtype()`
+            below for information on what is valid.
 
-            `left` and `right` may be:
-            - values of this class;
-            - AST node values with a `value` property; or
-            - `str` or `int` values that are variables (i.e., where
-              `valtype()` will return `VAR`).
+            `left` and `right` may be values of this class or plain
+            variable names.
 
             Formulae ought to be immutable, but Python doesn't have very
-            good facilities for doing this, so we do our best by ensuring
-            that we make copies of `left` and `right` (via `Node.clone()`)
-            so at least they're not shared. This doesn't, however, prevent
-            anybody from poking at our internal variables, even though they
-            start with an underscore as a hint that developers should not
-            do this.
+            good facilities for doing this. We do our best by making sure
+            that that the `value`, `type`, `left`, and `right` attributes
+            are read-only. This doesn't prevent anybody from poking at our
+            internal variables, but those do start with an underscore as a
+            hint that developers should not do this.
         '''
-        left  = self._nodify(left)
-        right = self._nodify(right)
+        self._left:  Optional["Fm"] = self._nodify(left)
+        self._right: Optional["Fm"] = self._nodify(right)
+        self._value: str            = getattr(vc, 'value', vc) # type: ignore [arg-type]
+        self._type:  "Fm.NodeType"  = self.valtype(vc)
 
-        if isinstance(vc, self.__class__):
-            vc = vc._tree.value
-
-        ty = self.valtype(vc)
-        self._tree : Node = Node(vc)
-        self._tree.type = ty
+        ty = self._type; left = self._left; right = self._right
         if ty == self.VAR:
-            if left or right:
+            if left is not None or right is not None:
                 raise ValueError(f'AST node {repr(vc)} may not have children')
         elif ty == self.MONADIC:
-            self._tree.right = right
-            if left or not right:
+            if left is not None or right is None:
                 raise ValueError(
                     f'AST monadic node {repr(vc)} must have only right child'
                         ' (left={left}, right={right}')
         elif ty == self.DYADIC:
-            self._tree.left = left
-            self._tree.right = right
-            if not left or not right:
+            if left is None or right is None:
                 raise ValueError(
                     f'AST dyadic node {repr(vc)} must have two children'
                         ' (left={left}, right={right}')
         else:
             raise self.InternalError()
 
-        #   Just in case we've constructed something weird or someone's
-        #   managed to sneak something in.
-        self._tree.validate()
-
     @staticmethod
-    def _nodify(x) -> Optional[Node]:
-        ''' Return a (cloned) `binarytree.Node` AST node from `x` if it is
+    def _nodify(x) -> Optional["Fm"]:
+        ''' Return an AST node (i.e., an `Fm` or `None`) from `x` if it is
             one or we can make one from it. This lets users using `left`
-            and `right` parameters to the constructor pass in other formula,
-            AST nodes, or values from which these can be constructed.
-
-            This clones nodes in order to avoid aliasing problems.
-
-            - Given `None`, we return `None`.
-            - Given a `binarytree.Node`, we return a clone of it.
-            - Given a formula `Fm`, we return a clone of its internal tree.
-            - Otherwise we call `Fm()` to attempt to build a valid node
-              that we can return.
-
-            In all cases this will give us a value that `binarytree.Node`
-            will accept as a `left` or `right` value. (It enforces these
-            values being instances of `binarytree.Node`.)
+            and `right` parameters to the constructor pass in any of
+            `None`, an `Fm` or a string containing a variable name.
         '''
         if x is None:               return None
-        if isinstance(x, Node):     return x.clone()
-        if isinstance(x, Fm):       return x._tree.clone()
-        'anything else:';           return Fm(x)._tree.clone()
+        if isinstance(x, Fm):       return x
+        'anything else:';           return Fm(x)
+
+    @property
+    def value(self) -> str:
+        ' The value of this node in the AST representing this formula. '
+        return self._value
+
+    @property
+    def type(self) -> NodeType:
+        ' The type of this node in the AST representing this formula. '
+        return self._type
+
+    @property
+    def left(self):
+        ' The left subtree of this node in the AST representing this formula. '
+        return self._left
+
+    @property
+    def right(self):
+        ' The right subtree of this node in the AST representing this formula. '
+        return self._right
 
     #   XXX The following has various typing issues because of the
     #   conflict between the duck typing it started with and the
     #   addition of type signatures later on. We need to come back
     #   to this after some further development and sort it out.
     @staticmethod
-    def valtype(obj: Union["Fm",Node,Value]) -> NodeType:
+    def valtype(obj: Union["Fm",str]) -> NodeType:
         ''' Determine whether a node is a `VAR`, `MONADIC` or `DYADIC`,
             raising `ValueError` if it's none of the above.
 
             The argument may be:
             - a (Unicode) `str` denoting a variable name or connective; or
-            - an object with a `value` attribute (e.g. an AST `Node`), in
-              which case the value will be checked,
             - a formula `Fm`, in which case the top node's value will be
               checked.
 
@@ -207,9 +184,6 @@ class Fm:
             XXX This could do better error checking, but really ought to be
             replaced with a proper parser that can parse full expressions.
         '''
-        #   XXX This first line to get the `Node` out of an `Fm` somehow
-        #   feels not terribly nice; let's think of a way to clean this up.
-        obj = getattr(obj, '_tree', obj)
         val = getattr(obj, 'value', obj)
 
         #   In contrast to the above, we don't really care whether the
@@ -226,72 +200,58 @@ class Fm:
 
     def __eq__(self, other) -> bool:
         ''' Return `True` if two formulae are the same, *including variable
-            names. Note that two formulae instantiated from the same schema
+            names.* Note that two formulae instantiated from the same schema
             with different substitutions are different formula. @public
         '''
         if not isinstance(other, self.__class__):
             return NotImplemented
-        return self._receq(self._tree, other._tree)
-
-    def _receq(self, x: Node, y: Node) -> bool:
-        ' Recursive `binarytree.Node` value comparison for `__eq__()`. '
-        if x is None and y is None: return True
-        if x is None  or y is None: return False
-        if x.value != y.value:      return False
-        return self._receq(x.left,  y.left) \
-           and self._receq(x.right, y.right)
+        return self.value  == other.value \
+            and self.left  == other.left \
+            and self.right == other.right
 
     def __repr__(self) -> str:
-        ''' Somewhat hacky repr, though good enough for the moment.
-            Consider removing the ``Fm()`` around variables, since
-            those can be passed in as just strings, and perhaps even
-            print a `NO` constructor in the output here.
-
-            But at least this is better than
-            ``<formula.Fm object at 0x7fac64d61550>``.
+        ''' A somewhat noisy `repr` that puts `Fm()` constructors everywhere.
+            It might be reasonable to remove the `Fm()` around variable
+            names (except at the root of the AST), since they can be passed
+            directly as strings, and perhaps even print convenience
+            constructors (`No`, `Im`) here.
         '''
-        return self._recrep(self._tree)
-
-    def _recrep(self, node: Node) -> str:
-        ''' Recursive generation of a string in repr()-ish format the value
-            of a given `binarytree.Node` and its children. Just for the use
-            of `__repr__()`.
-        '''
-        s = 'Fm(' + repr(node.value)
-        if not node.left and not node.right:
+        left = self.left; right = self.right
+        s = 'Fm(' + repr(self.value)
+        if not left and not right:
             return s + ')'          # no optional args
-        if node.left:
-            s += ', ' + self._recrep(node.left)
-        if node.right:
+        if left:
+            s += ', ' + repr(left)
+        if right:
             s += ', '
-            if not node.left:   s += 'right='
-            s += self._recrep(node.right)
+            if not left:  s += 'right='
+            s += repr(right)
         return s + ')'
 
     def __str__(self) -> str:
         ''' Pretty-print the AST an expression with appropriate parentheses
             and spacing.
         '''
-        tree = self._tree
-        s = self._strF(tree)
-        if self.valtype(tree) == self.DYADIC:
-            return s[1:-1]      # strip off outer parens
-        else:
+        if self.type == Fm.VAR:
+            return self.value
+        elif self.type == Fm.MONADIC:
+            if self.right.type == Fm.DYADIC:
+                return self.value + '(' + str(self.right) + ')'
+            else:
+                return self.value + str(self.right)
+        elif self.type == Fm.DYADIC:
+            if self.left.type == Fm.DYADIC:
+                s = '(' + str(self.left) + ')'
+            else:
+                s = str(self.left)
+            s += ' ' + self.value + ' '
+            if self.right.type == Fm.DYADIC:
+                s += '(' + str(self.right) + ')'
+            else:
+                s += str(self.right)
             return s
-
-    @staticmethod
-    def _strF(n: Node) -> str:
-        ''' This takes a `binarytree.Node` `n` and returns the string
-            representation of the formula expression.
-
-            This assumes that the tree structure is correct for
-            the `valtype()`s of each node.
-        '''
-        s   = Fm._strF
-        typ = Fm.valtype(n)
-        if typ == Fm.VAR:       return str(n.value)
-        if typ == Fm.MONADIC:   return '¬' + s(n.right)
-        return f'({s(n.left)} {str(n.value)} {s(n.right)})'
+        else:
+            raise self.InternalError()
 
 ####################################################################
 #   Variables, for convenience.

@@ -45,9 +45,9 @@ manner what dependencies are missing), and running all of the automated
 tests. It also takes parameters for doing clean builds, determining what
 subset of the tests to run, and so on. (In this case a `-c` at the start of
 the arguments will do a "clean" build, and the other parameters are passed
-on to `pytest` so you can, e.g., `./Test src/binarytree.pt -vv -k tree` to
+on to `pytest` so you can, e.g., `./Test src/formula.pt -vv -k valtype` to
 run, in fairly verbose mode, all the tests in that file with names matching
-"tree.")
+"valtype.")
 
 This is also of course suitable for running on build servers (such as
 GitHub actions); having the build servers and developers able to run the
@@ -132,24 +132,27 @@ more work than it creates. [anytree] seems to be the most popular, but is
 not quite suitable for us because it is designed for an arbitrary numbers
 of children per node, which means it doesn't have things such as an
 in-order iterator. [binarytree] is also pretty popular and is what I chose
-to use here.
+to use initially. It was initially useful, but was removed in a later
+refactoring because it wasn't pulling its weight. See the "remove
+binarytree" commit for details.
 
-[`src/binarytree.pt`] is a set of tests for the third-party `binarytree`
-library that I use for ASTs; thus it has no corresponding `.py` file. The
-tests are not because I don't trust the behaviour of `binarytree` (it
-already has plenty of its own tests), but because this is how I usually
-explore the behaviour of a library that I've not used before. The tests
-also serve to document some specific library behaviour used by my code in a
-fairly obvious way, rather than being buried in the (extensive) library
-documentation.
+In case you're curious about them from the history, the no-longer-existing
+`src/binarytree.pt` as a set of tests for the third-party `binarytree`
+library that was previously used for ASTs; thus it had no corresponding
+`.py` file. The tests were there not because I don't trust the behaviour of
+`binarytree` (it already has plenty of its own tests), but because this is
+how I usually explore the behaviour of a library that I've not used before.
+The tests also served to document some specific library behaviour used by
+my code in a fairly obvious way, rather than being buried in the
+(extensive) library documentation.
 
 [`src/formula.py`] implements my formula class in Python, with accompanying
 tests in [`src/formula.pt`]. It lets you do, e.g., this:
 
-    >>> str(F('→', F('→', NO('ψ'), NO('φ')), F('→', 'φ', 'ψ')))
+    >>> str(Fm('→', Fm('→', No(ψ), No(φ)), Fm('→', φ, ψ)))
     (¬ψ → ¬φ) → (φ → ψ)
 
-(The above is directly from the docstring for class `F` and is also a test
+(The above is directly from the docstring for class `Fm` and is also a test
 that's executed by pytest, using doctest.)
 
 This is actually a lot more code and documentation than I'd normally write
@@ -167,10 +170,10 @@ this looked like myself, so I left this version of the code in the repo.
 
 For notes on code style and formatting, see § [Coding Style].
 
-The `F` class and the additional `NO` constructor are named with extremely
-short names because they're what I'm currently directly using those to
-construct formulae (in Polish notation); more details on this are in the
-class docstring.
+The `Fm` class and the additional `No` (negation) and `Im` (implication)
+convenience constructors are named with extremely short names because
+they're what I'm currently directly using those to construct formulae (in
+Polish notation); more details on this are in the class docstring.
 
 This does considerable syntax checking; much of this was driven by wanting
 to write a `__str__()` method that gives a nice representation of formulae
@@ -248,16 +251,20 @@ seems to have been fixed in modern versions of mypy, probably due to having
 caching, interface files, etc., so it's obviously time for me to take it up
 again.
 
-The mypy type checking is still a work in progress. To get it passing at
-all (with no type hints in my source code yet), I had to deal with the
-`binarytree` library, which was giving the usual "missing library stubs or
-py.typed marker" error. I chose to deal with this by building local stubs
-for the library (`stubgen -o mypy-stubs -p binarytree` and adding `# type:
-ignore` to the `graphviz` import) and commiting those. I've also added a
-few type annotations to [`src/formula.py`], but I'm not convinced that
-they're all that useful there. (They probably would have helped more if I'd
-had them available from the start.) `src/*.pt` tests are also all type
-checked, though I don't use type annotations at all there at the moment.
+The mypy type checking is still a work in progress. Earlier on to get it
+passing at all (with no type hints in my source code yet), I had to deal
+with the `binarytree` library, which was giving the usual "missing library
+stubs or py.typed marker" error. I chose to deal with this by building
+local stubs for the library (`stubgen -o mypy-stubs -p binarytree` and
+adding `# type: ignore` to the `graphviz` import) and commiting those. I've
+left them there as samples, but I would normally have removed these when
+removing the `binarytree` dependency.
+
+I've also added a few type annotations to [`src/formula.py`], but I'm not
+convinced that they're all that useful there. (They probably would have
+helped more if I'd had them available from the start.) `src/*.pt` tests are
+also all type checked, though I don't use type annotations at all there at
+the moment.
 
 I'm familiar with other tools for checking test code coverage and the like,
 but I don't feel any of them are worth the time to install in this project,
@@ -338,7 +345,6 @@ caught _before_ a CI server would ever see them.)
 [`pactivate`]: ../pactivate
 [`pyproject.toml`]: ../pyproject.toml
 [`requirements.txt`]: ../requirements.txt
-[`src/binarytree.pt`]: ../src/binarytree.pt
 [`src/conftest.py`]: ../src/conftest.py
 [`src/formula.pt`]: ../src/formula.pt
 [`src/formula.py`]: ../src/formula.py
