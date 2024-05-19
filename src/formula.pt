@@ -7,21 +7,21 @@ p_ = pytest.mark.parametrize
 ####################################################################
 #   Value types
 
-@p_('x', ['a', 'A', 'x', 'φ', 'Ξ', 1, 2, Node('φ'), F('φ'), φ, A, ])
+@p_('x', ['a', 'A', 'x', 'φ', 'Ξ', 1, 2, Node('φ'), Fm('φ'), φ, A, ])
 def test_valtype_var(x):
-    assert F.valtype(x) is F.VAR
+    assert Fm.valtype(x) is Fm.VAR
 
-@p_('x', ['¬', Node('¬'), F('¬', None, φ), ])
+@p_('x', ['¬', Node('¬'), Fm('¬', None, φ), ])
 def test_valtype_monadic(x):
-    assert F.valtype(x) is F.MONADIC
+    assert Fm.valtype(x) is Fm.MONADIC
 
-@p_('x', ['→', '↔', '∧', '∨', '+', '*', Node('→'), F('→', 1, 2), ])
+@p_('x', ['→', '↔', '∧', '∨', '+', '*', Node('→'), Fm('→', 1, 2), ])
 def test_valtype_dyadic(x):
-    assert F.valtype(x) is F.DYADIC
+    assert Fm.valtype(x) is Fm.DYADIC
 
 @p_('x', ['->', 0, '3', None, ])
 def test_valtype_bad(x):
-    with pytest.raises(ValueError): F.valtype(x)
+    with pytest.raises(ValueError): Fm.valtype(x)
 
 
 ####################################################################
@@ -36,35 +36,35 @@ def test_F_inst_str():
         The three simple correct cases we need to cover are just a
         single variable, a monadic function, and a dyadic function.
     '''
-    f = F('α'); t = f._tree
+    f = Fm('α'); t = f._tree
     assert ('α', None, None) == (t.value, t.left, t.right)
 
-    f = F('¬', None, 'β'); t = f._tree
+    f = Fm('¬', None, 'β'); t = f._tree
     assert (    '¬',   None,           'β',         None,          None) \
         == (t.value, t.left, t.right.value, t.right.left, t.right.right)
 
-    f = F('→', 'α', 'β'); t = f._tree
+    f = Fm('→', 'α', 'β'); t = f._tree
     assert (    '→',          'α',           'β') \
         == (t.value, t.left.value, t.right.value)
     assert (       None,         None,         None,          None) \
         == (t.left.left, t.left.right, t.right.left, t.right.right)
 
-def test_F_inst_F():
+def test_Fm_inst_Fm():
     ''' Test instantiation of F where the `vc` is a Formula, rather
         than just a string or int.
     '''
-    assert 'φ' == F(F('φ'))._tree.value
+    assert 'φ' == Fm(Fm('φ'))._tree.value
 
 @p_('x, y', [
     (      'a',       'b'),
     (Node('a'), Node('b')),
-    (   F('a'),    F('b')),
+    (  Fm('a'),   Fm('b')),
 ])
 def test_F_nodify(x, y):
     ''' Ensure we can pass single values, `binarytree.Node` values
-        and `F` values to the `F` constructor.
+        and `Fm` values to the `Fm` constructor.
     '''
-    f = F('→', x, y);
+    f = Fm('→', x, y);
     assert ('a', 'b') == (f._tree.left.value, f._tree.right.value)
 
 @p_('arg0, arg1, arg2, msgfrag', [
@@ -77,60 +77,60 @@ def test_F_nodify(x, y):
     ('→',    1, None, 'must have two children'),
 ])
 def test_F_errors(arg0, arg1, arg2, msgfrag):
-    with pytest.raises(ValueError) as ex: F(arg0, arg1, arg2)
+    with pytest.raises(ValueError) as ex: Fm(arg0, arg1, arg2)
     assert ex.match(msgfrag)
 
-def test_NO():
-    f = NO(φ); t = f._tree
+def test_No():
+    f = No(φ); t = f._tree
     assert (    '¬',   None,           'φ',         None,          None) \
         == (t.value, t.left, t.right.value, t.right.left, t.right.right)
 
-    f = NO(F('→', 'a', 'b')); t = f._tree
+    f = No(Fm('→', 'a', 'b')); t = f._tree
     print(t)
     assert ('¬', '→', 'a', 'b') \
         == (t.value, t.right.value, t.right.left.value, t.right.right.value)
 
 @p_('s, x', [
-    ("F('φ')",                      F(φ)),
-    ("F('φ')",                        φ ),
-    ("F('→', F('a'), F('b'))",      F('→', 'a', 'b')),
-    ("F('¬', right=F('∧', F('a'), F('∨', F('b'), F('c'))))",
-                            (F('¬', None, F('∧', 'a', F('∨', 'b', 'c'))))),
+    ("Fm('φ')",                         Fm(φ)),
+    ("Fm('φ')",                         φ ),
+    ("Fm('→', Fm('a'), Fm('b'))",       Fm('→', 'a', 'b')),
+    ("Fm('¬', right=Fm('∧', Fm('a'), Fm('∨', Fm('b'), Fm('c'))))",
+                            (Fm('¬', None, Fm('∧', 'a', Fm('∨', 'b', 'c'))))),
 ])
 def test_repr(s, x): assert s == repr(x)
 
 @p_('eq, x, y', [
-    (False,  F(φ),                None),
-    (False,  F(φ),                NO(φ)),
-    (False,  F(φ),                F('→', φ, φ)),
-    ( True,  F(φ),                F(φ)),
-    ( True,  F('→', NO('a'), 'b'),  F('→', NO('a'), 'b')),
+    (False,  Fm(φ),                 None),
+    (False,  Fm(φ),                 No(φ)),
+    (False,  Fm(φ),                 Fm('→', φ, φ)),
+    ( True,  Fm(φ),                 Fm(φ)),
+    ( True,  Fm('→', No('a'), 'b'), Fm('→', No('a'), 'b')),
     #   Actually, these two are technically equal in the sense we probably
     #   want, because the variables are the same under subtitution.
     #   See the docstring for more details.
-    (False,  F(φ),                NO(ψ)),
+    (False,  Fm(φ),                No(ψ)),
 ])
 def test_F_eq(eq, x, y): assert eq is (x == y)
 
 @p_('s, f', [
-    ('φ',       F(φ)),
-    ('2',       F(2)),
-    ('¬ψ',      NO(ψ)),
-    ('p → q',   F('→', 'p', 'q')),
-    ('¬b → a',  F('→', NO('b'), 'a')),
+    ('φ',       Fm(φ)),
+    ('2',       Fm(2)),
+    ('¬ψ',      No(ψ)),
+    ('p → q',   Fm('→', 'p', 'q')),
+    ('¬b → a',  Fm('→', No('b'), 'a')),
     ('(φ → (ψ → χ)) → ((φ → ψ) → (φ → χ))',
-                F('→', F('→', φ, F('→', ψ, χ)),
-                       F('→', F('→', φ, ψ), F('→', φ, χ)))),
+                Fm('→', Fm('→',             φ, Fm('→', ψ, χ)),
+                        Fm('→', Fm('→', φ, ψ), Fm('→', φ, χ)))),
     ('(A ∧ B) → ¬(A → ¬B)',
-                F('→', F('∧', A, B), NO(F('→', A, NO(B))))),
+                Fm('→', Fm('∧', A, B), No(Fm('→', A, No(B))))),
     #   Might as well get some practice typing in something complex. :-P
     ('((((A → B) → (¬C → ¬D)) → C) → E) → ((E → A) → (D → A))',
-                F('→',
-                    F('→', F('→',
-                        F('→', F('→', A, B),
-                               F('→', NO(C), NO(D))),
-                        C), E),
-                    F('→', F('→', E, A), F('→', D, A)))),
+                Fm('→',
+                   Fm('→', Fm('→',
+                      Fm('→', Fm('→', A, B),
+                              Fm('→', No(C), No(D))),
+                      C),  E),
+                    Fm('→', Fm('→', E, A), Fm('→', D, A)))),
 
 ])
 def test_F_str(s, f): assert s == str(f)

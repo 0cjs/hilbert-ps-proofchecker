@@ -16,7 +16,7 @@
     the use of integer indexes as variables. (A string representing an
     integers, e.g., ``'1'`` is not allowed as a variable.)
 
-    A formula is represented by the `F` class which holds a `binarytree`
+    A formula is represented by the `Fm` class which holds a `binarytree`
     expressing its `abstract syntax tree`_ (AST), with connectives at the
     internal nodes and variables at the leaf nodes.
 
@@ -64,25 +64,26 @@ Value = Union[int, str]
     "Future work" in the module docstring.
 '''
 
-def NO(obj):
+def No(fm):
     ''' Convenience constructor for negating a formula. This accepts
-        anything that can be given to the `right` parameter of `F`.
+        anything that can be given to the `right` parameter of `Fm`.
 
-        ``NO`` happens to be the standard (RFC 1345) digraph for ``¬``.
+        (``NO`` happens to be the standard (RFC 1345) digraph for ``¬``,
+        so this is at least close).
     '''
-    return F('¬', None, obj)
+    return Fm('¬', None, fm)
 
-class F:
+class Fm:
     ''' A propositional formula represented as an AST of `binarytree.Node`s,
         each of which is:
         - a leaf node whose value is a variable or metavariable name/index, or
         - an internal node which is a monadic or dyadic connective.
 
-        This is named ``F`` rather than ``Formula`` as that gives a
-        reasonably nice Polish notation syntax (embedded in Python) for
+        This is named ``Fm`` rather than ``Formula`` as a short name gives
+        a reasonably nice Polish notation syntax (embedded in Python) for
         construction and viewing with `repr()`:
 
-        >>> str(F('→', F('→', NO(ψ), NO(φ)), F('→', φ, ψ)))
+        >>> str(Fm('→', Fm('→', No(ψ), No(φ)), Fm('→', φ, ψ)))
         '(¬ψ → ¬φ) → (φ → ψ)'
 
         See `__init__()` for construction details.
@@ -97,7 +98,7 @@ class F:
 
     class InternalError(RuntimeError): '@private'
 
-    def __init__(self, vc: Union["F", Value], left=None, right=None):
+    def __init__(self, vc: Union["Fm", Value], left=None, right=None):
         ''' Propositional formula constructor. This takes a propositional
             value or connective `vc` and, optionally, left and right
             sub-nodes for the AST, which may be formulae of this class,
@@ -164,8 +165,8 @@ class F:
 
             - Given `None`, we return `None`.
             - Given a `binarytree.Node`, we return a clone of it.
-            - Given a formula `F`, we return a clone of its internal tree.
-            - Otherwise we call `F()` to attempt to build a valid node
+            - Given a formula `Fm`, we return a clone of its internal tree.
+            - Otherwise we call `Fm()` to attempt to build a valid node
               that we can return.
 
             In all cases this will give us a value that `binarytree.Node`
@@ -174,15 +175,15 @@ class F:
         '''
         if x is None:               return None
         if isinstance(x, Node):     return x.clone()
-        if isinstance(x, F):        return x._tree.clone()
-        'anything else:';           return F(x)._tree.clone()
+        if isinstance(x, Fm):       return x._tree.clone()
+        'anything else:';           return Fm(x)._tree.clone()
 
     #   XXX The following has various typing issues because of the
     #   conflict between the duck typing it started with and the
     #   addition of type signatures later on. We need to come back
     #   to this after some further development and sort it out.
     @staticmethod
-    def valtype(obj: Union["F",Node,Value]) -> NodeType:
+    def valtype(obj: Union["Fm",Node,Value]) -> NodeType:
         ''' Determine whether a node is a `VAR`, `MONADIC` or `DYADIC`,
             raising `ValueError` if it's none of the above.
 
@@ -191,7 +192,7 @@ class F:
             - a (Unicode) `str` denoting a variable name or connective; or
             - an object with a `value` attribute (e.g. an AST `Node`), in
               which case the value will be checked,
-            - a formula `F`, in which case the top node's value will be
+            - a formula `Fm`, in which case the top node's value will be
               checked.
 
             The length of strings is currently asserted to be 1; it's not
@@ -205,7 +206,7 @@ class F:
             XXX This could do better error checking, but really ought to be
             replaced with a proper parser that can parse full expressions.
         '''
-        #   XXX This first line to get the `Node` out of an `F` somehow
+        #   XXX This first line to get the `Node` out of an `Fm` somehow
         #   feels not terribly nice; let's think of a way to clean this up.
         obj = getattr(obj, '_tree', obj)
         val = getattr(obj, 'value', obj)
@@ -216,7 +217,7 @@ class F:
             if val > 0:
                 #   We do not currently distinguish between variables,
                 #   metavariables and indices.
-                return F.VAR
+                return Fm.VAR
             else:
                 raise ValueError(f'variable index {val} must be > 0')
         #   In contrast to the above, we don't really care whether the
@@ -226,9 +227,9 @@ class F:
         if hasattr(val, 'isalpha') and hasattr(val, 'isnumeric'):
             if len(val) != 1:   # type: ignore [arg-type]
                 raise ValueError(f'length must be 1: {repr(val)}')
-            if val == '¬':          return F.MONADIC
-            if val.isalpha():       return F.VAR
-            if not val.isnumeric(): return F.DYADIC
+            if val == '¬':          return Fm.MONADIC
+            if val.isalpha():       return Fm.VAR
+            if not val.isnumeric(): return Fm.DYADIC
         raise ValueError(f'bad value: {repr(val)}')
 
     def __eq__(self, other) -> bool:
@@ -252,12 +253,12 @@ class F:
 
     def __repr__(self) -> str:
         ''' Somewhat hacky repr, though good enough for the moment.
-            Consider removing the ``F()`` around variables, since
+            Consider removing the ``Fm()`` around variables, since
             those can be passed in as just strings, and perhaps even
             print a `NO` constructor in the output here.
 
             But at least this is better than
-            ``<formula.F object at 0x7fac64d61550>``.
+            ``<formula.Fm object at 0x7fac64d61550>``.
         '''
         return self._recrep(self._tree)
 
@@ -266,7 +267,7 @@ class F:
             of a given `binarytree.Node` and its children. Just for the use
             of `__repr__()`.
         '''
-        s = 'F(' + repr(node.value)
+        s = 'Fm(' + repr(node.value)
         if not node.left and not node.right:
             return s + ')'          # no optional args
         if node.left:
@@ -296,10 +297,10 @@ class F:
             This assumes that the tree structure is correct for
             the `valtype()`s of each node.
         '''
-        s   = F._strF
-        typ = F.valtype(n)
-        if typ == F.VAR:        return str(n.value)
-        if typ == F.MONADIC:    return '¬' + s(n.right)
+        s   = Fm._strF
+        typ = Fm.valtype(n)
+        if typ == Fm.VAR:       return str(n.value)
+        if typ == Fm.MONADIC:   return '¬' + s(n.right)
         return f'({s(n.left)} {str(n.value)} {s(n.right)})'
 
 ####################################################################
@@ -311,12 +312,7 @@ class F:
 #
 #   - phi f*,  psi q*,  chi *f, theta h*, tau t*,  eta y*,  zeta z*
 #
-#   This brings up an issue with our naming of the formula class: ``F`` is
-#   also something people would reasonably want to use as a variable.
-#   Perhaps it should be renamed to, e.g., ``F_``. In which case we might
-#   also rename `NO` to ``N_``.
-#
 #   XXX I can't see a way to docstring this without making a mess of the code.
 
-φ, ψ, χ, θ, τ, η, ζ = map(F, 'φψχθτηζ')
-A, B, C, D, E       = map(F, 'ABCDE')
+φ, ψ, χ, θ, τ, η, ζ = map(Fm, 'φψχθτηζ')
+A, B, C, D, E, F, G = map(Fm, 'ABCDEFG')
