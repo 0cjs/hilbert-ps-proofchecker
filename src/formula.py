@@ -7,14 +7,11 @@
     logics where placing things adjacent to each other is an implicit
     operation, e.g., where ``pq`` is considered to mean ``p⋅q``.
 
-    Formulas may also be *schemas* from which formulas are *instantiated,*
-    in which case the variables are *metavariables.* (Formulas never mix
-    variables and metavariables.) Instantiation is done by substituting a
-    formula (which can of course be a simple variable) for each
-    metavariable. This is often done by giving each variable in the schema
-    an *index.* We do not currently support any of this, beyond allowing
-    the use of integer indexes as variables. (A string representing an
-    integers, e.g., ``'1'`` is not allowed as a variable.)
+    We do not currently support *schemas* from which formulae can be
+    *instantiated,* in which case the variables are *metavariables,* often
+    described by an *index.* (Variables and metavariables can never be
+    mixed in one object; it's either a formula with variables or a schema
+    with metavariables.)
 
     A formula is represented by the `Fm` class which holds a `binarytree`
     expressing its `abstract syntax tree`_ (AST), with connectives at the
@@ -33,14 +30,10 @@
       class that you cons with a formula, so that we always know what
       we're using where.
     * A parser to generate a `Formula` from e.g. ``φ → (ψ → φ)``.
-    * Consider how to indicate whether a `Formula` is a schema or not,
-      including possibly a translation system between metavariable names
-      and indices (``φ → (ψ → φ)`` to ``1 → (2 → 1)``).
-    * Fix equality so that it considers two formulae to be equal even if
-      they don't have the same variable names, as long as the variables
-      names could be matched via subtitution. But it's not clear to me
-      (cjs) if this is correct for non-schema formulae, and probably requires
-      some discussion about schema vs. non-schema representation.
+    * Consider how to indicate whether a `Formula` is a schema or not or,
+      more likely create a separate schema class, including possibly a
+      translation system between metavariable names and indices (``φ → (ψ →
+      φ)`` to ``1 → (2 → 1)``).
     * It would be neat to check that a `Formula` is a tautology.
       (PySAT may help if the formulas get complex.) But, per Nishant,
       the check is NP-complete, so not cheap.
@@ -52,11 +45,13 @@ from    enum  import Enum
 from    functools  import lru_cache
 from    typing  import Optional, Union
 
-Value = Union[int, str]
+Value = str
 ''' For some reason binarytree types ``NodeValue`` as `Any`, though with a
     comment mentioning ``Union[float, int, str]``. `Any` isn't useful to
     us, so we define our own Value, and drop `float` from it since we
-    never want to use that as a value.
+    never want to use that as a value. We also drop `int` because it's
+    not currently used by anything and we're removig integer variable
+    names in preparation for bulding a separate class for (axiom) schema.
 
     XXX Actually, probably only 1-char `str`s should be allowed as `Value`s
     for a formula, and ints should be allowed only in axiom schema, and
@@ -200,7 +195,6 @@ class Fm:
             raising `ValueError` if it's none of the above.
 
             The argument may be:
-            - an `int` > 0, denoting a variable index;
             - a (Unicode) `str` denoting a variable name or connective; or
             - an object with a `value` attribute (e.g. an AST `Node`), in
               which case the value will be checked,
@@ -210,11 +204,6 @@ class Fm:
             The length of strings is currently asserted to be 1; it's not
             clear yet if we really care about keeping that.
 
-            Note that due to a quirk of Python, `True` is also a variable
-            index because it's a subclass of `int` with value 1. (`False`
-            is a subclass of `int` with value 0, and thus can never be
-            a variable index.)
-
             XXX This could do better error checking, but really ought to be
             replaced with a proper parser that can parse full expressions.
         '''
@@ -223,15 +212,6 @@ class Fm:
         obj = getattr(obj, '_tree', obj)
         val = getattr(obj, 'value', obj)
 
-        #   Python has no "natural numbers" typeclass or similar idea
-        #   (as far as cjs is aware), so we allow only `int`s as indices.
-        if isinstance(val, int):
-            if val > 0:
-                #   We do not currently distinguish between variables,
-                #   metavariables and indices.
-                return Fm.VAR
-            else:
-                raise ValueError(f'variable index {val} must be > 0')
         #   In contrast to the above, we don't really care whether the
         #   variables a `str`s, `bytestrs`, or anything else the end
         #   user cares to use, so long as we can distinguish between
@@ -245,11 +225,9 @@ class Fm:
         raise ValueError(f'bad value: {repr(val)}')
 
     def __eq__(self, other) -> bool:
-        ''' Return `True` if two formulae are the same, *including
-            variable names.* Technically we should probably be
-            indicating equality if the variables can be made the same
-            through subsitution, though that's not entirely clear.
-            (A domain expert needs to be consulted about this.) @public
+        ''' Return `True` if two formulae are the same, *including variable
+            names. Note that two formulae instantiated from the same schema
+            with different substitutions are different formula. @public
         '''
         if not isinstance(other, self.__class__):
             return NotImplemented

@@ -7,7 +7,7 @@ p_ = pytest.mark.parametrize
 ####################################################################
 #   Value types
 
-@p_('x', ['a', 'A', 'x', 'φ', 'Ξ', 1, 2, Node('φ'), Fm('φ'), φ, A, ])
+@p_('x', ['a', 'A', 'x', 'φ', 'Ξ', Node('φ'), Fm('φ'), φ, A, ])
 def test_valtype_var(x):
     assert Fm.valtype(x) is Fm.VAR
 
@@ -15,7 +15,7 @@ def test_valtype_var(x):
 def test_valtype_monadic(x):
     assert Fm.valtype(x) is Fm.MONADIC
 
-@p_('x', ['→', '↔', '∧', '∨', '+', '*', Node('→'), Fm('→', 1, 2), ])
+@p_('x', ['→', '↔', '∧', '∨', '+', '*', Node('→'), Fm('→', ψ, φ), ])
 def test_valtype_dyadic(x):
     assert Fm.valtype(x) is Fm.DYADIC
 
@@ -68,13 +68,13 @@ def test_F_nodify(x, y):
     assert ('a', 'b') == (f._tree.left.value, f._tree.right.value)
 
 @p_('arg0, arg1, arg2, msgfrag', [
-    ('α',    1, None, 'may not have children'),
-    ('α', None,    2, 'may not have children'),
+    ('α',  'A', None, 'may not have children'),
+    ('α', None,  'B', 'may not have children'),
     ('¬', None, None, 'must have only right child'),
-    ('¬',    1,    2, 'must have only right child'),
+    ('¬',  'A',  'B', 'must have only right child'),
     ('→', None, None, 'must have two children'),
-    ('→', None,    2, 'must have two children'),
-    ('→',    1, None, 'must have two children'),
+    ('→', None,  'B', 'must have two children'),
+    ('→',  'A', None, 'must have two children'),
 ])
 def test_F_errors(arg0, arg1, arg2, msgfrag):
     with pytest.raises(ValueError) as ex: Fm(arg0, arg1, arg2)
@@ -104,7 +104,6 @@ def test_F_eq(eq, x, y): assert eq is (x == y)
 
 @p_('s, f', [
     ('φ',       Fm(φ)),
-    ('2',       Fm(2)),
     ('¬ψ',      No(ψ)),
     ('p → q',   Fm('→', 'p', 'q')),
     ('¬b → a',  Fm('→', No('b'), 'a')),
