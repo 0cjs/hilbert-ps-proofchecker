@@ -1,111 +1,115 @@
-from    binarytree  import Node
-from    binarytree  import Node
 from    enum  import Enum
 from    functools  import lru_cache
+from    typing  import Optional, Union
 
-def NO(obj):
-    return F('¬', None, obj)
+def No(fm):
+    return Fm('¬', None, fm)
 
-class F:
-    _nt = Enum('_nt', ['VAR', 'MONADIC', 'DYADIC', ])
-    VAR     = _nt.VAR       ;'Node type is a variable or metavariable.'
-    MONADIC = _nt.MONADIC   ;'Node type is a monadic conective. (¬)'
-    DYADIC  = _nt.DYADIC    ;'Node type is a dyadic connective. (→, ↔, etc.)'
+def Im(fma, fmc):
+    return Fm('→', fma, fmc)
 
-    class InternalError(RuntimeError): pass
+class Fm:
+    NodeType = Enum('NodeType', ['VAR', 'MONADIC', 'DYADIC', ])
+    VAR      = NodeType.VAR
+    MONADIC  = NodeType.MONADIC
+    DYADIC   = NodeType.DYADIC
 
-    def __init__(self, vc, left=None, right=None):
-        left  = self._nodify(left)
-        right = self._nodify(right)
+    class InternalError(RuntimeError): '@private'
 
-        ty = self.nodetype(vc)
-        self._tree = Node(vc)
-        self._tree.type = ty
+    def __init__(self, vc: Union["Fm", str], left=None, right=None):
+        self._left:  Optional["Fm"] = self._nodify(left)
+        self._right: Optional["Fm"] = self._nodify(right)
+        self._value: str            = getattr(vc, 'value', vc) # type: ignore [arg-type]
+        self._type:  "Fm.NodeType"  = self.valtype(vc)
+
+        ty = self._type; left = self._left; right = self._right
         if ty == self.VAR:
-            if left or right:
+            if left is not None or right is not None:
                 raise ValueError(f'AST node {repr(vc)} may not have children')
         elif ty == self.MONADIC:
-            self._tree.right = right
-            if left or not right:
+            if left is not None or right is None:
                 raise ValueError(
                     f'AST monadic node {repr(vc)} must have only right child'
                         ' (left={left}, right={right}')
         elif ty == self.DYADIC:
-            self._tree.left = left
-            self._tree.right = right
-            if not left or not right:
+            if left is None or right is None:
                 raise ValueError(
                     f'AST dyadic node {repr(vc)} must have two children'
                         ' (left={left}, right={right}')
         else:
             raise self.InternalError()
 
-        self._tree.validate()
-
     @staticmethod
-    def _nodify(x):
+    def _nodify(x) -> Optional["Fm"]:
         if x is None:               return None
-        if isinstance(x, Node):     return x.clone()
-        if isinstance(x, F):        return x._tree.clone()
-        'anything else:';           return F(x)._tree.clone()
+        if isinstance(x, Fm):       return x
+        'anything else:';           return Fm(x)
+
+    @property
+    def value(self) -> str: return self._value
+
+    @property
+    def type(self) -> NodeType: return self._type
+
+    @property
+    def left(self): return self._left
+
+    @property
+    def right(self): return self._right
 
     @staticmethod
-    def nodetype(obj):
+    def valtype(obj: Union["Fm",str]) -> NodeType:
         val = getattr(obj, 'value', obj)
 
-        if isinstance(val, int):
-            if val > 0:
-                return F.VAR
-            else:
-                raise ValueError(f'variable index {val} must be > 0')
         if hasattr(val, 'isalpha') and hasattr(val, 'isnumeric'):
-            if len(val) != 1:
+            if len(val) != 1:   # type: ignore [arg-type]
                 raise ValueError(f'length must be 1: {repr(val)}')
-            if val == '¬':          return F.MONADIC
-            if val.isalpha():       return F.VAR
-            if not val.isnumeric(): return F.DYADIC
+            if val == '¬':          return Fm.MONADIC
+            if val.isalpha():       return Fm.VAR
+            if not val.isnumeric(): return Fm.DYADIC
         raise ValueError(f'bad value: {repr(val)}')
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, self.__class__):
             return NotImplemented
-        return self._receq(self._tree, other._tree)
+        return self.value  == other.value \
+            and self.left  == other.left \
+            and self.right == other.right
 
-    def _receq(self, x, y):
-        ' Recursive `binarytree.Node` value comparison for `__eq__()`. '
-        if x is None and y is None: return True
-        if x is None  or y is None: return False
-        if x.value != y.value:      return False
-        return self._receq(x.left,  y.left) \
-           and self._receq(x.right, y.right)
-
-    def __repr__(self):
-        return self._recrep(self._tree)
-
-    def _recrep(self, node):
-        s = 'F(' + repr(node.value)
-        if not node.left and not node.right:
-            return s + ')'
-        if node.left:
-            s += ', ' + self._recrep(node.left)
-        if node.right:
+    def __repr__(self) -> str:
+        left = self.left; right = self.right
+        s = 'Fm(' + repr(self.value)
+        if not left and not right:
+            return s + ')'          # no optional args
+        if left:
+            s += ', ' + repr(left)
+        if right:
             s += ', '
-            if not node.left:   s += 'right='
-            s += self._recrep(node.right)
+            if not left:  s += 'right='
+            s += repr(right)
         return s + ')'
 
-    def __str__(self):
-        tree = self._tree
-        s = self._strF(tree)
-        if self.nodetype(tree) == self.DYADIC:
-            return s[1:-1]
-        else:
+    def __str__(self) -> str:
+        if self.type == Fm.VAR:
+            return self.value
+        elif self.type == Fm.MONADIC:
+            if self.right.type == Fm.DYADIC:
+                return self.value + '(' + str(self.right) + ')'
+            else:
+                return self.value + str(self.right)
+        elif self.type == Fm.DYADIC:
+            if self.left.type == Fm.DYADIC:
+                s = '(' + str(self.left) + ')'
+            else:
+                s = str(self.left)
+            s += ' ' + self.value + ' '
+            if self.right.type == Fm.DYADIC:
+                s += '(' + str(self.right) + ')'
+            else:
+                s += str(self.right)
             return s
+        else:
+            raise self.InternalError()
 
-    @staticmethod
-    def _strF(n, depth=0):
-        s   = F._strF
-        typ = F.nodetype(n)
-        if typ == F.VAR:        return str(n.value)
-        if typ == F.MONADIC:    return '¬' + s(n.right)
-        return f'({s(n.left)} {str(n.value)} {s(n.right)})'
+φ, ψ, χ, θ, τ, η, ζ = map(Fm, 'φψχθτηζ')
+A, B, C, D, E, F, G = map(Fm, 'ABCDEFG')
