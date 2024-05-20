@@ -16,8 +16,12 @@ cd "$PROJECT_DIR"
 #   But it doesn't seem needed for speed (mypy currently does a full check
 #   in <0.3s if there are no errors), so perhaps it's not needed at all.
 #   (And of course it can be run directly from the virtualenv.)
-echo -n 'mypy: '
-PYTHONPATH=src/ mypy        # Config in pyproject.toml.
+if [[ ${1:-} == -T ]]; then
+    shift                       # skip typecheck
+else
+    echo -n 'mypy: '
+    PYTHONPATH=src/ mypy        # Config in pyproject.toml.
+fi
 
 #   Because pytest is taking user-specified parameters and these may be
 #   relative paths (often generated via command-line completion), we cd to
