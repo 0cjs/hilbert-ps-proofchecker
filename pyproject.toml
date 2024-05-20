@@ -16,15 +16,15 @@ pythonpath = ['src']
 testpaths = ['src']    # used only when pytest started from rootdir
 addopts   = ['-q', '-p pytest_pt', '--doctest-modules']
 
-
+#   We no longer use binarytree, but leave this here as an example of
+#   how to deal with warnings in pytest in the most specific way possible.
+#
 #   binarytree emits a DeprecationWarning at …/binarytree/__init__.py:30
 #   saying,
 #       pkg_resources is deprecated as an API.
 #       See https://setuptools.pypa.io/en/latest/pkg_resources.html
 #   This is due to the line:
 #       from pkg_resources import get_distribution
-#   This will presumably be fixed in a future version, but for now we
-#   ignore just this specific warning when generated at that line.
 filterwarnings = [
     'ignore:pkg_resources is deprecated as an API:DeprecationWarning:binarytree:30',
 ]
