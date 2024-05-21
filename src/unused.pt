@@ -20,6 +20,8 @@ def test_equ(p, x, y): assert p is (x == y)
     ([ A1, A2, A1, MP(0,2),         ], [ A1, A1, MP(0,1)        ]),
     ([ A2, A1, A1, A2, MP(1,2), A2, A1, MP(6, 4) ],
                                        [ A1, A1, MP(0,1), A1, MP(3, 2) ]),
+    ([ A1, A1, A2, A2, MP(2,3), MP(0,1) ],
+                                       [ A1, A1, MP(0,1)        ]),
 
 ])
 def test_remunused(input, expected):
