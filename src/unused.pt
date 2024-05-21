@@ -1,0 +1,27 @@
+from    unused  import A1, A2, MP, rmunused
+import  pytest
+
+@pytest.mark.parametrize('p, x, y', [
+    (False, A1, None),
+    (True,  A1, A1),
+    (False, A1, A2),
+    (False, A1, MP(1,2)),
+    (False, MP(1,2), MP(1,3)),
+    (True,  MP(1,2), MP(1,2)),
+])
+def test_equ(p, x, y): assert p is (x == y)
+
+@pytest.mark.parametrize('input, expected', [
+    ([                              ], [                        ]),
+    ([ A1                           ], [ A1                     ]),
+    ([ A1, A1                       ], [ A1                     ]),
+    ([ A1, A1, MP(0,1), A1          ], [ A1                     ]),
+    ([ A1, A1, MP(0,1)              ], [ A1, A1, MP(0,1)        ]),
+    ([ A1, A2, A1, MP(0,2),         ], [ A1, A1, MP(0,1)        ]),
+    ([ A2, A1, A1, A2, MP(1,2), A2, A1, MP(6, 4) ],
+                                       [ A1, A1, MP(0,1), A1, MP(3, 2) ]),
+
+])
+def test_remunused(input, expected):
+    print(input)
+    assert expected == rmunused(input)
