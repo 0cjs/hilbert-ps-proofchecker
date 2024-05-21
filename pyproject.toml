@@ -37,3 +37,5 @@ mypy_path   = [ 'mypy-stubs/', ]
 #   mypy to name the module after the filename (including extension), which
 #   allows checking multiple *.pt files in one run.
 scripts_are_modules = true
+#   Type-check the interior of functions without type annotations.
+check_untyped_defs  = true
