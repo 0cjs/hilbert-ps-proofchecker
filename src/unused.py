@@ -1,4 +1,23 @@
-''' Remove unused steps from a proof.
+''' `rmunused()` below implements a simplified version of a "proof
+    optimisation" problem focuses only on the graph part by removing any
+    steps that are not referenced by the final step.
+
+    Note that, unlike standard mathematical notation, the steps here
+    are numbered from 0. This is for simplicity of implementation in
+    this exercise, and is probably not what we'd want to do in a real
+    proof system. (But who knows. I don't.)
+
+    Another part of the problem appears to be to remove duplicate
+    instantiations of axiom schema, which is not too tough, but nothing to
+    do with graphs. (It gets tougher if you have to deal with error
+    checking, such as substitutions for variable indices that are not in
+    the axiom schema.)
+
+    The full problem would be remvoal of *all* redundancy, which is
+    a lot more difficult, since I believe it's possible to have
+    redundant steps that look different due to different variable names
+    but actually are not. However, it's difficult for me to come up
+    with an example, so I may be wrong.
 '''
 
 from    enum  import Enum
@@ -71,32 +90,15 @@ def MP(min: int, maj: int):
 ####################################################################
 
 def rmunused(steps: List[ProofStep]) -> List[ProofStep]:
-    ''' This is a simplified version of problem 2 that focuses only on the
-        "graph" part of the "minify" problem by removing any steps that are
-        not referenced by the final step.
+    ''' Given a list of of `ProofStep`s `steps`, return a new list
+        that excludes any steps not referenced, directly or indirectly, by
+        the final step. Since the only type of step that can reference
+        another step is an `StepType.MP`, this will return just the final
+        step if it's not an MP; otherwise it traces through all chains of
+        MPs and their immediate dependencies, returning all those.
 
-        Note that, unlike standard mathematical notation, the steps here
-        are numbered from 0. This is for simplicity of implementation in
-        this exercise, and is probably not what we'd want to do in a real
-        proof system. (But who knows. I don't.)
-
-        Another part of the problem appears to be asking to remove
-        duplicate instantiations of axiom schema, which is not too tough,
-        but nothing to do with graphs. (It gets tougher if you have to deal
-        with error checking, such as substitutions for variable indices
-        that are not in the axiom schema.)
-
-        The full description asks for removal of *all* redundancy, which is
-        a lot more difficult, since I believe it's possible to have
-        redundant steps that look different due to different variable names
-        but actually are not. However, it's difficult for me to come up
-        with an example, so I may be wrong.
-
-        Further, part of the question says to raise an exception, unless
-        "the input constitutes a proof of ϕₙ in PS." which seems to imply
-        a *valid* proof, which then means you need to verify it. Or, if
-        it's not supposed to imply that, what is something here that is
-        not a "proof" of ϕₙ? Something invalid in the data structure?
+        This is O(n): the number of operations is a (small) multiple
+        of the number of steps.
     '''
     stepcount = len(steps)
     if stepcount == 0:      return []           # Empty proof: no redundancy.
@@ -113,10 +115,10 @@ def rmunused(steps: List[ProofStep]) -> List[ProofStep]:
         sorted(depset),
         range(0, len(depset))))
 
+    #   Build the new list of steps, updating MP step "pointers."
     def updateMP(step: ProofStep) -> ProofStep:
         if step.notMP:  return step
         return MP(newidx[step.min], newidx[step.maj])
-
     newsteps = []
     for i in newidx:
         newsteps.append(updateMP(steps[i]))
