@@ -266,3 +266,4 @@ class Fm:
 
 φ, ψ, χ, θ, τ, η, ζ = map(Fm, 'φψχθτηζ')
 A, B, C, D, E, F, G = map(Fm, 'ABCDEFG')
+P, Q, R, S, T,      = map(Fm, 'PQRST')
