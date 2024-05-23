@@ -23,6 +23,10 @@ they represent sets and the like.)
 A __formula__ is a simple (atomic) proposition or a __compound proposition__
 made from simple propositions and __propositional connectives.__
 
+Formulae with a dyadic connective at the root of the AST refer to that as
+the __main connective.__ I'm not clear on whether a monadic connective is
+the main connective in, e.g., ¬(φ → ψ).
+
 A formula will have either variables or metavariables (the latter making it
 a schema), but never both.
 
