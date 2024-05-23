@@ -116,7 +116,7 @@ It's __logically valid__ if (P₁ ∧ P₂ ∧ … ∧ Pₙ) → Pₙ₊₁ is a
 ### §1.6 A Proof System
 
 Proofs here are done in __the system L.__ A proof is a sequence of
-formulas with jusitifcations; each line is:
+formulae with jusitifcations; each line is:
 - an axiom of L (which is instantiated from an axiom schema);
 - result of applying Modus Ponens (MP);
 - a __hypothesis__ or a given formula, `G₁` etc.; or

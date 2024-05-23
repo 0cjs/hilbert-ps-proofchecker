@@ -102,7 +102,7 @@ are used; you can search from here or just read on.
 
 ### Data Structures
 
-Representing formulas is pretty simple, depending on the language; the
+Representing formulae is pretty simple, depending on the language; the
 obvious way to do this is via an abstract syntax tree. In Haskell,
 
     newtype  Var = Char

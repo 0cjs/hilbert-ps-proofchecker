@@ -1,4 +1,4 @@
-''' Formulas are expressions consisting of a *simple proposition,*
+''' Formulae are expressions consisting of a *simple proposition,*
     which is just a variable, or a *compound proposition* of variables
     connected by *connectives.*
 
@@ -35,7 +35,7 @@
       translation system between metavariable names and indices
       (``φ → (ψ → φ)`` to ``1 → (2 → 1)``).
     * It would be neat to check that a `Formula` is a tautology.
-      (PySAT may help if the formulas get complex.) But, per Nishant,
+      (PySAT may help if the formulae get complex.) But, per Nishant,
       the check is NP-complete, so not cheap.
 
     .. _abstract syntax tree: https://en.wikipedia.org/wiki/Abstract_syntax_tree
