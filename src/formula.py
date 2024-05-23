@@ -41,7 +41,6 @@
     .. _abstract syntax tree: https://en.wikipedia.org/wiki/Abstract_syntax_tree
 '''
 from    enum  import Enum
-from    functools  import lru_cache
 from    typing  import Optional, Union
 
 def No(fm):
@@ -111,6 +110,10 @@ class Fm:
             internal variables, but those do start with an underscore as a
             hint that developers should not do this.
         '''
+        self._str:   Optional[str]  = None      # .__str__() cache
+        self._repr:  Optional[str]  = None      # .__repr__() cache
+        self._vars:  Optional[str]  = None      # .vars cache
+
         self._left:  Optional["Fm"] = self._nodify(left)
         self._right: Optional["Fm"] = self._nodify(right)
         self._value: str            = getattr(vc, 'value', vc) # type: ignore [arg-type]
@@ -169,12 +172,15 @@ class Fm:
         ''' Return a list (as a `str`) of the unique variables in the formula,
             in the order encountered left to right in the expression.
         '''
+        if self._vars is not None:  return self._vars
+
         def _vars(fm:Fm, acc:str) -> str:
             if fm is None: return acc
             acc = _vars(fm.left, acc)
             if (fm._type is fm.VAR) and (fm.value not in acc):  acc += fm.value
             return _vars(fm.right, acc)
-        return _vars(self, '')
+        self._vars = _vars(self, '')
+        return self._vars
 
     #   XXX The following has various typing issues because of the
     #   conflict between the duck typing it started with and the
@@ -228,29 +234,34 @@ class Fm:
             directly as strings, and perhaps even print convenience
             constructors (`No`, `Im`) here.
         '''
+        if self._repr is not None:  return self._repr
+
         left = self.left; right = self.right
         s = 'Fm(' + repr(self.value)
         if not left and not right:
-            return s + ')'          # no optional args
+            self._repr = s + ')'        # no optional args
         if left:
             s += ', ' + repr(left)
         if right:
             s += ', '
             if not left:  s += 'right='
             s += repr(right)
-        return s + ')'
+        self._repr = s + ')'
+        return self._repr
 
     def __str__(self) -> str:
         ''' Pretty-print the AST an expression with appropriate parentheses
             and spacing.
         '''
+        if self._str is not None:  return self._str
+
         if self.type == Fm.VAR:
-            return self.value
+            self._str = self.value
         elif self.type == Fm.MONADIC:
             if self.right.type == Fm.DYADIC:
-                return self.value + '(' + str(self.right) + ')'
+                self._str = self.value + '(' + str(self.right) + ')'
             else:
-                return self.value + str(self.right)
+                self._str = self.value + str(self.right)
         elif self.type == Fm.DYADIC:
             if self.left.type == Fm.DYADIC:
                 s = '(' + str(self.left) + ')'
@@ -261,9 +272,10 @@ class Fm:
                 s += '(' + str(self.right) + ')'
             else:
                 s += str(self.right)
-            return s
+            self._str = s
         else:
             raise self.InternalError()
+        return self._str
 
 ####################################################################
 #   Variables, for convenience.
