@@ -134,6 +134,17 @@ def test_F_eq(eq, x, y): assert eq is (x == y)
 ])
 def test_F_str(s, f): assert s == str(f)
 
+@p_('v, f', [
+    ('φ',       φ),
+    ('ψ',       No(ψ)),
+    ('pq',      Im('p', 'q')),
+    ('QRP',     Im(Im(Q, R), No(Im(No(P), R)))),
+    ('φψχ',     #  (φ → (ψ → χ)) → ((φ → ψ) → (φ → χ))
+                Im( Im(         φ, Im(ψ, χ)),
+                    Im( Im( φ, ψ), Im(φ, χ)))),
+])
+def test_vars(v, f): print(f); assert v == f.vars
+
 ####################################################################
 #   Convenience constructors
 #

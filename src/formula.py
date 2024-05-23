@@ -164,6 +164,18 @@ class Fm:
         ' The right subtree of this node in the AST representing this formula. '
         return self._right
 
+    @property
+    def vars(self) -> str:
+        ''' Return a list (as a `str`) of the unique variables in the formula,
+            in the order encountered left to right in the expression.
+        '''
+        def _vars(fm:Fm, acc:str) -> str:
+            if fm is None: return acc
+            acc = _vars(fm.left, acc)
+            if (fm._type is fm.VAR) and (fm.value not in acc):  acc += fm.value
+            return _vars(fm.right, acc)
+        return _vars(self, '')
+
     #   XXX The following has various typing issues because of the
     #   conflict between the duck typing it started with and the
     #   addition of type signatures later on. We need to come back
