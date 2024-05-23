@@ -63,7 +63,11 @@ def test_Fm_constant_value(attrname):
     f = Im(ψ, φ)
     with pytest.raises(AttributeError) as ex:
         setattr(f, attrname, 'X')
-    assert ex.match('has no setter')
+    #   The actual message text changes for different Python versions, but
+    #   if it's an AttributeError, it's almost certainly correct, so we
+    #   don't bother to check the message text itself.
+   #assert ex.match('has no setter')       # Python 3.11
+   #assert ex.match("can't set attribute") # Python 3.9, 3.10
 
 @p_('x, y', [
     (      'a',       'b'),
