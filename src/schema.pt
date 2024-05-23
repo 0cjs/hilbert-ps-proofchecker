@@ -1,0 +1,32 @@
+from    schema  import *
+import  pytest
+
+####################################################################
+
+def test_schema_small():
+    sc = Schema(φ)
+    assert 'φ' == str(sc)
+    assert 'φ' == sc.metavars
+    assert φ == sc.sub()
+    assert A == sc.sub([A])
+   #assert B == sc.subm(φ=B)    # XXX not yet implemented
+
+def test_schema_suberror():
+    with pytest.raises(ValueError) as ex:
+        sc = Schema(φ).sub([Im(P,Im(Q,R)), S])
+    assert str(ex.value) == 'substitution list (P → (Q → R), S)' \
+        " does not match metavariable list 'φ'"
+
+def test_schema_large():
+    sc = Schema(Im( Im(         φ, Im(ψ, χ)),
+                    Im( Im( φ, ψ), Im(φ, χ))))
+    assert '(φ → (ψ → χ)) → ((φ → ψ) → (φ → χ))' == str(sc)
+    assert 'φψχ' == sc.metavars
+    assert '(φ → (ψ → χ)) → ((φ → ψ) → (φ → χ))' == str(sc.sub())
+    assert '(P → (Q → T)) → ((P → Q) → (P → T))' == str(sc.sub([P,Q,T]))
+    #   XXX test subm()
+
+def test_schema_formulasub():
+    sc = Schema(Im(φ, Im(ψ, φ)))                # φ → (ψ → φ)
+    assert '(P → Q) → (¬(Q → P) → (P → Q))' \
+        == str(sc.sub([Im(P, Q), No(Im(Q, P))]))
