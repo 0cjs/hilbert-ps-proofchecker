@@ -132,7 +132,7 @@ class Fm:
             if left is None or right is None:
                 raise ValueError(
                     f'AST dyadic node {repr(vc)} must have two children'
-                        ' (left={left}, right={right}')
+                        f' (left={left}, right={right}')
         else:
             raise self.InternalError()
 
