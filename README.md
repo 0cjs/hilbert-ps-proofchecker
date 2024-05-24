@@ -7,7 +7,8 @@ This README provides a quick overview suitable for those just wanting
 general information about what's in this repo; for details of why
 everything is the way it is, see [`doc/explainer.md`].
 
-### Building and Running the Tests
+Building and Running the Tests
+------------------------------
 
 Running `./Test` at the top level will build everything (including
 documentation) and run all tests.
@@ -23,13 +24,20 @@ files under `.build/`.
 
 The generated HTML documentation is placed under `.build/hdoc`.
 
-(For reasons of time, this has not been tested under Windows, but in theory
-it should work the same as it does on Unix so long as you're running the
-script in MINGW Bash, which is installed along with [Git for Windows][gfw].)
-
 For more on this, see [`doc/explainer.md`].
 
-### Directories and Files
+#### Dependencies
+
+This requires at least Python 3.9, and has been tested on all Pythons
+3.9 through 3.12. (It can be ported to 3.8 and even 3.7, if necessary.)
+
+For reasons of time, this has not been tested under Windows, but in theory
+it should work the same as it does on Unix so long as you're running the
+script in MINGW Bash, which is installed along with [Git for Windows][gfw].
+
+
+Directories and Files
+---------------------
 
 - `doc/`: Documentation not specific to the code itself, especially
   mathematical background information and cjs's notes.
