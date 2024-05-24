@@ -100,6 +100,10 @@ this directly from PyPI.) This does two useful things:
 The remaining dependencies in `requirements.txt` are discussed where they
 are used; you can search from here or just read on.
 
+There is one extra "dependency" included in this repo: [`src/lazyprop.py`].
+This makes use of certain properties and methods more efficient by lazily
+evaluating them and caching the evaulated values.
+
 ### Data Structures
 
 Representing formulae is pretty simple, depending on the language; the
@@ -361,6 +365,7 @@ caught _before_ a CI server would ever see them.)
 [`src/conftest.py`]: ../src/conftest.py
 [`src/formula.pt`]: ../src/formula.pt
 [`src/formula.py`]: ../src/formula.py
+[`src/lazyprop.py`]: ../src/lazyprop.py
 [`src/nodocF.py`]: ../src/nodocF.py
 [`src/proof.pt`]: ../src/proof.pt
 [`src/proof.py`]: ../src/proof.py

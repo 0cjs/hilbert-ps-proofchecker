@@ -1,0 +1,45 @@
+from    lazyprop  import *
+import  pytest
+
+####################################################################
+
+def test_lazyproperty_export():
+    with pytest.raises(NameError):
+        LazyProperty(lambda self: None)  # type: ignore[name-defined]
+
+####################################################################
+
+class T:
+    def __init__(self):
+        self.callcount = 0
+
+####################################################################
+
+class TL(T):
+    @lazyproperty
+    def aa(self):  self.callcount += 1; return None
+
+def test_lazyproperty_usage():
+    t = TL()
+    assert (0, False) == (t.callcount, hasattr(t, '__aa'))
+    assert None == t.aa
+    assert (None, 1) == (t.__aa, t.callcount)   # type: ignore [attr-defined]
+    assert None == t.aa
+    assert 1 == t.callcount     # TL.aa() was not called a second time
+
+    with pytest.raises(AttributeError) as ex: t.aa = None
+    assert ex.match(r"property 'aa' of 'TL' object has no setter")
+
+####################################################################
+
+class TM(T):
+    @lazymethod
+    def mm(self):  self.callcount += 1; return None
+
+def test_lazymethod_usage():
+    t = TM()
+    assert (0, False) == (t.callcount, hasattr(t, '__mm'))
+    assert None == t.mm()
+    assert (None, 1) == (t.__mm, t.callcount)   # type: ignore [attr-defined]
+    assert None == t.mm()
+    assert 1 == t.callcount     # TM.mm() was not called a second time
