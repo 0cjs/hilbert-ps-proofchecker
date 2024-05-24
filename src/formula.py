@@ -92,7 +92,7 @@ class Fm:
 
     class InternalError(RuntimeError): '@private'
 
-    def __init__(self, vc: Union["Fm", str], left=None, right=None):
+    def __init__(self, vc:Union["Fm", str], left=None, right=None):
         ''' Propositional formula constructor. This takes a propositional
             value or connective `vc` and, optionally, left and right
             sub-nodes for the AST.
@@ -110,14 +110,14 @@ class Fm:
             internal variables, but those do start with an underscore as a
             hint that developers should not do this.
         '''
-        self._str:   Optional[str]  = None      # .__str__() cache
-        self._repr:  Optional[str]  = None      # .__repr__() cache
-        self._vars:  Optional[str]  = None      # .vars cache
+        self._str:Optional[str]     = None      # .__str__() cache
+        self._repr:Optional[str]    = None      # .__repr__() cache
+        self._vars:Optional[str]    = None      # .vars cache
 
-        self._left:  Optional["Fm"] = self._nodify(left)
-        self._right: Optional["Fm"] = self._nodify(right)
-        self._value: str            = getattr(vc, 'value', vc) # type: ignore [arg-type]
-        self._type:  "Fm.NodeType"  = self.valtype(vc)
+        self._left:Optional["Fm"]   = self._nodify(left)
+        self._right:Optional["Fm"]  = self._nodify(right)
+        self._value:str             = getattr(vc, 'value', vc) # type: ignore [arg-type]
+        self._type:"Fm.NodeType"    = self.valtype(vc)
 
         ty = self._type; left = self._left; right = self._right
         if ty == self.VAR:
@@ -175,7 +175,7 @@ class Fm:
         if self._vars is not None:  return self._vars
 
         def _vars(fm:Fm, acc:str) -> str:
-            if fm is None: return acc
+            if fm is None:  return acc
             acc = _vars(fm.left, acc)
             if (fm._type is fm.VAR) and (fm.value not in acc):  acc += fm.value
             return _vars(fm.right, acc)
@@ -187,7 +187,7 @@ class Fm:
     #   addition of type signatures later on. We need to come back
     #   to this after some further development and sort it out.
     @staticmethod
-    def valtype(obj: Union["Fm",str]) -> NodeType:
+    def valtype(obj:Union["Fm",str]) -> NodeType:
         ''' Determine whether a node is a `VAR`, `MONADIC` or `DYADIC`,
             raising `ValueError` if it's none of the above.
 
@@ -209,7 +209,7 @@ class Fm:
         #   user cares to use, so long as we can distinguish between
         #   letters, numbers, and anything else.
         if hasattr(val, 'isalpha') and hasattr(val, 'isnumeric'):
-            if len(val) != 1:   # type: ignore [arg-type]
+            if len(val) != 1:       # type: ignore [arg-type]
                 raise ValueError(f'length must be 1: {repr(val)}')
             if val == '¬':          return Fm.MONADIC
             if val.isalpha():       return Fm.VAR
