@@ -346,11 +346,8 @@ class Proof:
             except IndexError:  raise self.StepError(f'Step {i} {s}'
                 f' references non-existent axiom Schema index {s.index}')
         elif isinstance(s, MP):
-            def invalid_hyp(hyp):
-                ''' Return `True` if the given MP hypothesis step is not
-                    valid: i.e., not in range 1 to our preceeding step. '''
-                return not (0 < hyp < i)
-            if invalid_hyp(s.min) or invalid_hyp(s.maj):
+            prev = range(1, i)        # does not include this step!
+            if not s.min in prev or not s.maj in prev:
                 raise self.StepError(
                     f'Step {i} {s} references non-existent previous steps')
         else:
