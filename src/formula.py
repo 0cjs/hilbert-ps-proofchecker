@@ -200,7 +200,7 @@ class Fm:
         val = getattr(obj, 'value', obj)
 
         #   In contrast to the above, we don't really care whether the
-        #   variables a `str`s, `bytestrs`, or anything else the end
+        #   variables are `str`s, `bytestr`s, or anything else the end
         #   user cares to use, so long as we can distinguish between
         #   letters, numbers, and anything else.
         if hasattr(val, 'isalpha') and hasattr(val, 'isnumeric'):
