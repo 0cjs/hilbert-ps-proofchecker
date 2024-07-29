@@ -32,7 +32,7 @@ a schema), but never both.
 
 ### Logics, Proof Systems, etc.
 
-A __logic__ has three parts: _syntax_ h_semantics_ and a _proof system_
+A __logic__ has three parts: _syntax,_ _semantics_ and a _proof system_
 (one of the latter two may be omitted in some logics).
 - The __syntax__ is required in all logics, and is the usual thing computer
   geeks know, usually given as a grammar or an ADT.
