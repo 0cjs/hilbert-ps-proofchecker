@@ -1,6 +1,8 @@
 ''' This module provides decorators for lazily initialised properties and
     methods that cache their initial return value and return that
-    thereafter.
+    thereafter. Note that, unlike `functools.cached_property`, here the
+    cached value is held in the object (and disposed of when the object
+    is GC'd) rather than in a global per-method cache indexed by object.
 
     The `lazyproperty` decorator converts a method to a read-only property
     that is initialised once on first access. The `lazymethod` decorator
