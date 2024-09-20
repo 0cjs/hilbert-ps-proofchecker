@@ -7,6 +7,21 @@ This README provides a quick overview suitable for those just wanting
 general information about what's in this repo; for details of why
 everything is the way it is, see [`doc/explainer.md`].
 
+The main parts of this of this are:
+- The proof checker itself and its related programs and data structures,
+  under `src/`, as an example of a small program displaying reasonable
+  mathematical sophistication.
+- The `src/lazyprop` module, designed to do lazy evaulation and better
+  caching of single-assignment values in objects than
+  `functools.cached_property` does, as an example of "system level" Python
+  code.
+- The build/test system (see `Test` below) that deals with external
+  dependencies and making type checking, pytest, etc. easy to run on a
+  granular level ("DX" or "Developer" experience).
+- Extensive documentation, both in docstrings (generated to a set of HTML
+  pages) and in documentation files.
+
+
 Building and Running the Tests
 ------------------------------
 
