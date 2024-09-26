@@ -25,10 +25,9 @@ logs (but is easier to read here); other parts of it make many of my
 conventions explicit. However, reading through the Git log from the start
 forward should present a readable story about what's been done and why.
 
-This is probably considerably more detailed than expected, but since our
-only communication right now is via e-mail and rare videoconferences, I
-felt it wise to err on the safe side. (I would not normally document
-anything to this degree, unless there was a particular need for it.)
+Note that the following is considerably more detailed than I would normally
+write for in-repo documentation when I'm working with a team where I have
+other channels of communication as well.
 
 ### Top-level Files
 
@@ -37,17 +36,17 @@ probably faster to set this up than to write up this explanation; it's
 something I do frequently and for which I have several standard tools I've
 built to help me with this.
 
-[`Test`] is a script at the top level of most ever repo I create; all a
-developer has to do is clone the repo and run it (e.g., with `./Test`) and
-it handles setting up any virtual environments necessary, finding or
-building all dependencies (or at least informing the developer in a clear
-manner what dependencies are missing), and running all of the automated
-tests. It also takes parameters for doing clean builds, determining what
-subset of the tests to run, and so on. (In this case a `-c` at the start of
-the arguments will do a "clean" build, and the other parameters are passed
-on to `pytest` so you can, e.g., `./Test src/formula.pt -vv -k valtype` to
-run, in fairly verbose mode, all the tests in that file with names matching
-"valtype.")
+[`Test`] is a script at the top level of most every repo I create that
+gives a "one-button build and test": a developer need only is clone the
+repo and run it (from the top level, with `./Test`) and it handles setting
+up any virtual environments necessary, finding or building all dependencies
+(or at least informing the developer in a clear manner what dependencies
+are missing), and running all of the automated tests. It also takes
+parameters for doing clean builds, determining what subset of the tests to
+run, and so on. (In this case a `-c` at the start of the arguments will do
+a "clean" build, and the other parameters are passed on to `pytest` so you
+can, e.g., `./Test src/formula.pt -vv -k valtype` to run, in fairly verbose
+mode, all the tests in that file with names matching "valtype.")
 
 This is also of course suitable for running on build servers (such as
 GitHub actions); having the build servers and developers able to run the

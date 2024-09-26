@@ -9,9 +9,9 @@
 
     We do not currently support *schemas* from which formulae can be
     *instantiated,* in which case the variables would be *metavariables,*
-    often described by an *index.* (Variables and metavariables can never
-    be mixed in one object; it's either a formula with variables or a
-    schema with metavariables.)
+    often *indexed* by a numerical or string identifier. (Variables and
+    metavariables can never be mixed in one object; it's either a formula
+    with variables or a schema with metavariables.)
 
     A formula is represented by the `Fm` class which is a binary tree
     expressing the `abstract syntax tree`_ (AST), of the formula, with

@@ -55,7 +55,9 @@ Directories and Files
 ---------------------
 
 - `doc/`: Documentation not specific to the code itself, especially
-  mathematical background information and cjs's notes.
+  mathematical background information and cjs's notes. (Many of these notes
+  are normally the kind of thing I'd put in my [sedoc] repo, but in this
+  case it seemed better to keep them closer to the relevant code.
   - `doc/TODO.md`: A to-do list for the project.
   - `doc/hirst.pdf`: Hirst and Hirst, [_A Primer for Logic and Proof_][hirst].
     The first chapter of this appears to cover, at an introductory level,
@@ -80,3 +82,4 @@ Directories and Files
 
 [hirst]: http://www.appstate.edu/~hirstjl/primer/hirst.pdf
 [mm-home]: https://us.metamath.org/mpeuni/mmset.html
+[sedoc]: https://github.com/0cjs/sedoc
