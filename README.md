@@ -1,7 +1,7 @@
 hilbert-ps-proofchecker
 =======================
 
-This project implements a proof checker for Hilber PS logic.
+This project implements a proof checker for Hilbert PS logic.
 
 This README provides a quick overview suitable for those just wanting
 general information about what's in this repo; for details of why
