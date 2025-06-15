@@ -57,6 +57,7 @@ fi
 built_docs="$PROJECT_DIR/.build/hdoc"
 echo "Generating documentation to:"
 echo "file://$built_docs/index.html"
+rm -rf "$built_docs"
 PYTHONPATH=src/ pdoc -o "$built_docs" \
     --footer-text \
         'Copyright 2024 by Curt J. Sampson. All rights reserved.' \
