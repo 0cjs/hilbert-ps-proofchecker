@@ -1,6 +1,11 @@
 hilbert-ps-proofchecker
 =======================
 
+> __NOTE:__ This project is _not_ open source. You may read the code, but
+> you may not use it for any other purpose, including training generative
+> AI or other systems. All contents of this repository are Copyright 2024
+> by Curt J. Sampson <cjs@cynic.net>.
+
 This project implements a proof checker for Hilbert PS logic.
 
 This README provides a quick overview suitable for those just wanting
