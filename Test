@@ -6,7 +6,14 @@ START_DIR="$(pwd -P)"
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 cd "$PROJECT_DIR"
 
-[[ ${1:-} == -c ]] && { shift; rm -rf .build/{virtualenv,hdoc}; }
+skip_typecheck=false
+while [[ $# -gt 0 ]]; do case "$1" in
+    -C)     shift; rm -rf "$PROJECT_DIR"/.build/;;
+    -c)     shift; rm -rf "$PROJECT_DIR"/.build/hdoc;;
+    -T)     shift; skip_typecheck=true;;
+    --)     shift; break;;      # remainder are pytest args
+    *)      break;;
+esac; done
 
 . ./pactivate -q
 
@@ -16,8 +23,8 @@ cd "$PROJECT_DIR"
 #   But it doesn't seem needed for speed (mypy currently does a full check
 #   in <0.3s if there are no errors), so perhaps it's not needed at all.
 #   (And of course it can be run directly from the virtualenv.)
-if [[ ${1:-} == -T ]]; then
-    shift                       # skip typecheck
+if $skip_typecheck; then
+    echo 'WARNING: Skipping typecheck.'
 else
     echo -n 'mypy: '
     PYTHONPATH=src/ mypy        # Config in pyproject.toml.
