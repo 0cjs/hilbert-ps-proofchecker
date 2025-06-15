@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 trap 'rc=$?; echo 2>&1 "ERROR"; exit $rc' ERR
+shopt -s extglob
 
 START_DIR="$(pwd -P)"
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
@@ -56,12 +57,9 @@ fi
 built_docs="$PROJECT_DIR/.build/hdoc"
 echo "Generating documentation to:"
 echo "file://$built_docs/index.html"
-#   This produces documentation as if it were under a top-level module
-#   named `src`. It doesn't seem possible to convince it that the modules in
-#   src/ are top-level modules; doing a chdir into src/ and trying `.` or
-#   `./` as an argument doesn't work. So for the moment we just live with it.
 PYTHONPATH=src/ pdoc -o "$built_docs" \
-    --footer-text 'Copyright 2024 by Curt J. Sampson. All rights reserved.' \
-    src/
+    --footer-text \
+        'Copyright 2024 by Curt J. Sampson. All rights reserved.' \
+    src/!(*.pt)
 
 echo OK
