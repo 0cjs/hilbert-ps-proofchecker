@@ -12,6 +12,7 @@
 #   [1]: https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/
 
 [tool.pytest.ini_options]
+cache_dir = '.build/cache/pytest'
 pythonpath = ['src']
 testpaths = ['src']    # used only when pytest started from rootdir
 addopts   = ['-q', '-p pytest_pt', '--doctest-modules']
@@ -30,6 +31,7 @@ filterwarnings = [
 ]
 
 [tool.mypy]
+cache_dir   = '.build/cache/mypy'
 files       = [ 'src/', 'src/**/*.pt' ]
 mypy_path   = [ 'mypy-stubs/', ]
 #   mypy normally loads non-*.py files as a module named __main__, causing

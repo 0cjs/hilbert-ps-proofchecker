@@ -10,7 +10,7 @@ cd "$PROJECT_DIR"
 skip_typecheck=false
 while [[ $# -gt 0 ]]; do case "$1" in
     -C)     shift; rm -rf "$PROJECT_DIR"/.build/;;
-    -c)     shift; rm -rf "$PROJECT_DIR"/.build/hdoc;;
+    -c)     shift; rm -rf "$PROJECT_DIR"/.build/{cache,hdoc};;
     -T)     shift; skip_typecheck=true;;
     --)     shift; break;;      # remainder are pytest args
     *)      break;;
